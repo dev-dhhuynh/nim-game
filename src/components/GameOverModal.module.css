@@ -1,0 +1,111 @@
+/* Lớp phủ tối phía sau modal */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+/* Hộp modal */
+.modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+    text-align: center;
+    width: 90%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ánh sáng phía trên modal */
+.modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--accent-gold),
+            transparent);
+}
+
+/* Icon trophy / robot */
+.icon {
+    font-size: 3.5rem;
+}
+
+/* Khu vực kết quả */
+.result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* Tên người thắng */
+.winnerName {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+}
+
+.humanWin {
+    color: var(--accent-gold);
+    text-shadow: 0 0 30px rgba(245, 196, 0, 0.7);
+}
+
+.aiWin {
+    color: var(--accent-red);
+    text-shadow: 0 0 30px rgba(255, 56, 100, 0.7);
+}
+
+/* Lời nhắn */
+.message {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Nút hành động */
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Confetti */
+.confetti {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--color);
+    border-radius: 2px;
+    bottom: 0;
+}

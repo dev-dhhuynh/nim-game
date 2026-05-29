@@ -1,25 +1,83 @@
-import logo from './logo.svg';
-import './App.css';
+// =============================================
+// APP.JS — Điều hướng chính
+// =============================================
+import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
+import { useGameStore } from './store/gameStore';
+import { applyTheme } from './utils/themes';
+import MenuPage    from './pages/MenuPage';
+import SetupPage   from './pages/SetupPage';
+import GamePage    from './pages/GamePage';
+import './styles/globals.css';
 
-function App() {
+const pageVariants = {
+  initial: { opacity: 0, scale: 0.98 },
+  animate: { opacity: 1, scale: 1    },
+  exit:    { opacity: 0, scale: 1.02 },
+};
+
+const App = () => {
+  const { gamePhase, settings } = useGameStore();
+
+  // Áp dụng theme khi app khởi động
+  useEffect(() => {
+    applyTheme(settings.theme || 'default');
+  }, []);
+
+  const renderPage = () => {
+    switch (gamePhase) {
+      case 'menu':    return <MenuPage  key='menu'  />;
+      case 'setup':   return <SetupPage key='setup' />;
+      case 'playing':
+      case 'gameover':return <GamePage  key='game'  />;
+      default:        return <MenuPage  key='menu'  />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div
+      className='bg-grid'
+      style={{ width: '100%', height: '100%' }}
+    >
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key={
+            gamePhase === 'playing' || gamePhase === 'gameover'
+              ? 'game'
+              : gamePhase
+          }
+          variants={pageVariants}
+          initial='initial'
+          animate='animate'
+          exit='exit'
+          transition={{ duration: 0.25 }}
+          style={{ width: '100%', height: '100%' }}
         >
-          Learn React
-        </a>
-      </header>
+          {renderPage()}
+        </motion.div>
+      </AnimatePresence>
+
+      <Toaster
+        position='bottom-right'
+        toastOptions={{
+          style: {
+            background: 'var(--bg-card)',
+            color:      'var(--text-primary)',
+            border:     '1px solid var(--border)',
+            fontFamily: 'var(--font-body)',
+            fontSize:   '0.85rem',
+          },
+          success: {
+            iconTheme: {
+              primary:   'var(--accent-primary)',
+              secondary: 'var(--bg-primary)',
+            },
+          },
+        }}
+      />
     </div>
   );
-}
+};
 
 export default App;

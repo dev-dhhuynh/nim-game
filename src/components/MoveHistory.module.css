@@ -1,0 +1,116 @@
+/* Khung ngoài */
+.container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 280px;
+    overflow: hidden;
+}
+
+/* Tiêu đề */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.title {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+}
+
+/* Badge đếm số nước */
+.count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent-primary);
+    background: rgba(0, 245, 196, 0.1);
+    border: 1px solid rgba(0, 245, 196, 0.2);
+    border-radius: 10px;
+    padding: 1px 8px;
+}
+
+/* Danh sách cuộn được */
+.list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Chữ khi chưa có nước đi */
+.empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    padding: 20px;
+}
+
+/* Một dòng nước đi */
+.item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--border);
+}
+
+/* Màu viền trái theo người chơi */
+.player0 {
+    border-left-color: var(--accent-primary);
+}
+
+.player1 {
+    border-left-color: var(--accent-gold);
+}
+
+/* Số thứ tự */
+.turnNum {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    width: 24px;
+    flex-shrink: 0;
+}
+
+/* Tên người chơi */
+.playerName {
+    font-weight: 700;
+    font-size: 0.78rem;
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.player0 .playerName {
+    color: var(--accent-primary);
+}
+
+.player1 .playerName {
+    color: var(--accent-gold);
+}
+
+/* Mô tả nước đi */
+.moveDesc {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.moveDesc strong {
+    color: var(--text-primary);
+}

@@ -1,0 +1,133 @@
+/* Khung hàng que */
+.pile {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-height: 130px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pile:hover:not(.pileDisabled) {
+    border-color: rgba(0, 245, 196, 0.4);
+    box-shadow: 0 0 20px rgba(0, 245, 196, 0.08);
+}
+
+/* Khi bị disabled */
+.pileDisabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Highlight khi vừa bị lấy que */
+.pileHighlighted {
+    border-color: var(--accent-gold) !important;
+    box-shadow: 0 0 24px rgba(245, 196, 0, 0.3) !important;
+}
+
+/* Tiêu đề */
+.pileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pileLabel {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.pileCount {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+/* Khu vực que */
+.stones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 40px;
+    align-content: flex-start;
+}
+
+/* Một viên que */
+.stone {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--accent-primary);
+    filter: drop-shadow(0 0 4px rgba(0, 245, 196, 0.5));
+    cursor: default;
+    user-select: none;
+}
+
+/* Phần chọn số */
+.selector {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selectorLabel {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.selectorBtns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+/* Nút số */
+.numBtn {
+    width: 30px;
+    height: 30px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.numBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    background: rgba(0, 245, 196, 0.08);
+}
+
+/* Hàng trống */
+.emptyPile {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 10px;
+    letter-spacing: 0.1em;
+}

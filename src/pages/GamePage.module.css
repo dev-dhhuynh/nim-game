@@ -1,0 +1,190 @@
+/* Toàn bộ trang game */
+.gamePage {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-primary);
+    overflow: hidden;
+}
+
+/* ── Thanh trên ── */
+.topBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    gap: 12px;
+}
+
+.gameInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timer {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.turnLabel {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.topActions {
+    display: flex;
+    gap: 6px;
+}
+
+/* ── Nội dung chính ── */
+.content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── Sidebar trái ── */
+.sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.vsLabel {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+}
+
+/* Nim-Sum box */
+.nimBox {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.nimRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nimLabel {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+}
+
+.nimVal {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.nimNonzero {
+    color: var(--accent-primary);
+    text-shadow: 0 0 12px rgba(0, 245, 196, 0.7);
+}
+
+.nimZero {
+    color: var(--accent-red);
+    text-shadow: 0 0 12px rgba(255, 56, 100, 0.7);
+}
+
+.nimHint {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Lịch sử */
+.historyWrap {
+    flex: 1;
+    min-height: 120px;
+}
+
+/* ── Bàn chơi giữa ── */
+.board {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Banner lượt chơi */
+.turnBanner {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-primary);
+    /* đổi từ text-secondary sang text-primary */
+    text-align: center;
+    padding: 8px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+}
+
+.aiThinking {
+    color: var(--accent-red);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Grid các hàng que */
+.piles {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    max-width: 680px;
+}
+
+/* Hộp gợi ý */
+.hintBox {
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    text-align: center;
+    max-width: 420px;
+}
+
+.hintWin {
+    background: rgba(0, 245, 196, 0.08);
+    border: 1px solid rgba(0, 245, 196, 0.25);
+    color: var(--accent-primary);
+}
+
+.hintLose {
+    background: rgba(255, 56, 100, 0.08);
+    border: 1px solid rgba(255, 56, 100, 0.25);
+    color: var(--accent-red);
+}
+
+/* Nút dưới bàn chơi */
+.boardActions {
+    display: flex;
+    gap: 10px;
+}

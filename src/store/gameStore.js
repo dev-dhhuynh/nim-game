@@ -18,23 +18,38 @@ import {
   saveSettings,
   loadSettings,
 } from '../utils/storage';
+import {
+  sounds,
+  playWinSound,
+  playLoseSound,
+  playBgMusic,
+  stopBgMusic,
+  setSoundEnabled,
+} from '../utils/soundManager';
+import { applyTheme } from '../utils/themes';
 
 // ---------------------------------------------
 // Cài đặt mặc định
 // ---------------------------------------------
 const DEFAULT_SETTINGS = {
-  gameMode:      'pvp',                        // 'pvp' | 'pvc'
-  aiDifficulty:  'hard',                       // 'easy' | 'medium' | 'hard'
+  gameMode:      'pvp',
+  aiDifficulty:  'hard',
   playerNames:   ['Người Chơi 1', 'Người Chơi 2'],
   aiName:        'NIM-Bot',
-  misereVariant: false, // true = người lấy cuối THUA
+  misereVariant: false,
+  soundEnabled:  true,
+  theme:         'default',
 };
 
-// Tải settings đã lưu (nếu có)
 const savedSettings = loadSettings();
 
+// Áp dụng theme đã lưu ngay khi load app
+if (savedSettings?.theme) {
+  applyTheme(savedSettings.theme);
+}
+
 // ---------------------------------------------
-// Tạo store bằng Zustand
+// Tạo store
 // ---------------------------------------------
 export const useGameStore = create((set, get) => ({
 
@@ -45,22 +60,47 @@ export const useGameStore = create((set, get) => ({
     const newSettings = { ...get().settings, ...partial };
     set({ settings: newSettings });
     saveSettings(newSettings);
+
+    // Nếu đổi theme — áp dụng màu mới + đổi nhạc
+    if (partial.theme) {
+      applyTheme(partial.theme);
+      if (newSettings.soundEnabled) {
+        playBgMusic(partial.theme);
+      }
+    }
+
+    // Nếu bật/tắt âm thanh
+    if (partial.soundEnabled !== undefined) {
+      setSoundEnabled(partial.soundEnabled);
+      if (partial.soundEnabled) {
+        playBgMusic(newSettings.theme);
+      } else {
+        stopBgMusic();
+      }
+    }
   },
 
   // ── Trạng thái game ────────────────────────
-  piles:         [3, 5, 7],   // số que mỗi hàng
-  currentPlayer: 0,           // 0 = người 1, 1 = người 2 / AI
-  gamePhase:     'menu',      // 'menu' | 'setup' | 'playing' | 'gameover'
-  winner:        null,        // index người thắng
-  moveHistory:   [],          // lịch sử nước đi
-  isAIThinking:  false,       // AI đang "suy nghĩ"
-  nimSum:        0,           // Nim-Sum hiện tại
-  turnCount:     0,           // đếm số lượt
-  gameStartTime: null,        // thời điểm bắt đầu
+  piles:         [3, 5, 7],
+  currentPlayer: 0,
+  gamePhase:     'menu',
+  winner:        null,
+  moveHistory:   [],
+  isAIThinking:  false,
+  nimSum:        0,
+  turnCount:     0,
+  gameStartTime: null,
 
   // ── Bắt đầu game mới ───────────────────────
   startGame: (piles) => {
-    const initPiles = piles || get().piles;
+    const initPiles  = piles || get().piles;
+    const { settings } = get();
+
+    // Bắt đầu nhạc nền theo theme
+    if (settings.soundEnabled) {
+      playBgMusic(settings.theme);
+    }
+
     set({
       piles:         initPiles,
       currentPlayer: 0,
@@ -72,7 +112,7 @@ export const useGameStore = create((set, get) => ({
       turnCount:     0,
       gameStartTime: Date.now(),
     });
-    deleteSavedGame(); // xóa game cũ khi bắt đầu mới
+    deleteSavedGame();
   },
 
   // ── Sinh piles ngẫu nhiên ──────────────────
@@ -95,13 +135,9 @@ export const useGameStore = create((set, get) => ({
       settings, turnCount,
     } = get();
 
-    // Kiểm tra hợp lệ
     if (piles[pileIndex] < removeCount || removeCount < 1) return false;
 
-    // Tính piles mới sau nước đi
-    const newPiles  = applyMove(piles, pileIndex, removeCount);
-
-    // Ghi vào lịch sử
+    const newPiles   = applyMove(piles, pileIndex, removeCount);
     const newHistory = [
       ...moveHistory,
       {
@@ -113,18 +149,28 @@ export const useGameStore = create((set, get) => ({
       },
     ];
 
-    // Kiểm tra game kết thúc chưa
+    // Kiểm tra kết thúc
     if (isGameOver(newPiles)) {
       let winner;
       if (settings.misereVariant) {
-        // Misère: lấy cuối THUA
         winner = currentPlayer === 0 ? 1 : 0;
       } else {
-        // Normal: lấy cuối THẮNG
         winner = currentPlayer;
       }
 
-      // Lưu vào lịch sử ván
+      // Dừng nhạc nền
+      stopBgMusic();
+
+      // Âm thanh thắng/thua
+      if (settings.soundEnabled) {
+        if (settings.gameMode === 'pvc') {
+          if (winner === 0) playWinSound();
+          else              playLoseSound();
+        } else {
+          playWinSound();
+        }
+      }
+
       saveToHistory({
         winner,
         mode:       settings.gameMode,
@@ -154,7 +200,7 @@ export const useGameStore = create((set, get) => ({
       turnCount:     turnCount + 1,
     });
 
-    // Nếu PvC và đến lượt AI thì tự động đi
+    // Nếu PvC và đến lượt AI
     if (settings.gameMode === 'pvc' && nextPlayer === 1) {
       setTimeout(() => get().triggerAIMove(), 800);
     }
@@ -169,6 +215,8 @@ export const useGameStore = create((set, get) => ({
 
     set({ isAIThinking: true });
 
+    if (settings.soundEnabled) sounds.aiThink();
+
     setTimeout(() => {
       const move = calcAIMove(piles, settings.aiDifficulty);
       if (move) {
@@ -180,18 +228,14 @@ export const useGameStore = create((set, get) => ({
     }, 600);
   },
 
-  // ── Hoàn tác nước đi ───────────────────────
+  // ── Hoàn tác ───────────────────────────────
   undoMove: () => {
     const { moveHistory, settings } = get();
-
-    // PvP undo 1 bước, PvC undo 2 bước (hủy cả lượt AI)
     const stepsBack  = settings.gameMode === 'pvc' ? 2 : 1;
     if (moveHistory.length < stepsBack) return;
 
-    const newHistory = moveHistory.slice(0, -stepsBack);
-    const prevMove   = newHistory[newHistory.length - 1];
-
-    // Lấy lại piles trước đó
+    const newHistory     = moveHistory.slice(0, -stepsBack);
+    const prevMove       = newHistory[newHistory.length - 1];
     const restoredPiles  = prevMove ? prevMove.pilesAfter : [3, 5, 7];
     const restoredPlayer = prevMove
       ? (prevMove.player === 0 ? 1 : 0)
@@ -207,16 +251,27 @@ export const useGameStore = create((set, get) => ({
     });
   },
 
-  // ── Lưu game hiện tại ──────────────────────
+  // ── Lưu game ───────────────────────────────
   saveCurrentGame: () => {
-    const { piles, currentPlayer, moveHistory, settings, turnCount, gameStartTime } = get();
-    return saveGame({ piles, currentPlayer, moveHistory, settings, turnCount, gameStartTime });
+    const {
+      piles, currentPlayer, moveHistory,
+      settings, turnCount, gameStartTime,
+    } = get();
+    return saveGame({
+      piles, currentPlayer, moveHistory,
+      settings, turnCount, gameStartTime,
+    });
   },
 
   // ── Tải game đã lưu ────────────────────────
   loadSavedGame: () => {
     const saved = loadGame();
     if (!saved) return false;
+
+    // Áp dụng theme đã lưu
+    if (saved.settings?.theme) {
+      applyTheme(saved.settings.theme);
+    }
 
     set({
       piles:         saved.piles,
@@ -226,13 +281,17 @@ export const useGameStore = create((set, get) => ({
       gamePhase:     'playing',
       winner:        null,
       nimSum:        calcNimSum(saved.piles),
-      turnCount:     saved.turnCount || 0,
+      turnCount:     saved.turnCount     || 0,
       gameStartTime: saved.gameStartTime || Date.now(),
     });
     return true;
   },
 
-  // ── Điều hướng màn hình ────────────────────
-  goToMenu:  () => set({ gamePhase: 'menu'  }),
+  // ── Điều hướng ─────────────────────────────
+  goToMenu: () => {
+    stopBgMusic();
+    set({ gamePhase: 'menu' });
+  },
+
   goToSetup: () => set({ gamePhase: 'setup' }),
 }));

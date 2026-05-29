@@ -8,7 +8,7 @@ import { hasSavedGame } from '../utils/storage';
 import styles from './MenuPage.module.css';
 
 const MenuPage = () => {
-  const { goToSetup, loadSavedGame } = useGameStore();
+  const { goToSetup, loadSavedGame, goToTutorial } = useGameStore();
   const [savedExists, setSavedExists] = useState(false);
 
   // Kiểm tra có game đã lưu không
@@ -73,20 +73,15 @@ const MenuPage = () => {
             ↩ Tiếp Tục
           </button>
         )}
-      </motion.div>
 
-      {/* Hướng dẫn nhanh */}
-      <motion.div
-        className={styles.howto}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        <p className={styles.howtoTitle}>CÁCH CHƠI</p>
-        <p>
-          Lấy bất kỳ số que từ <em>một hàng</em>.
-          Người lấy que <strong>cuối cùng thắng</strong>.
-        </p>
+        {/* Nút hướng dẫn — thêm mới */}
+        <button
+          className={`btn btn-ghost ${styles.btnMain}`}
+          onClick={goToTutorial}
+        >
+          📖 Hướng Dẫn
+        </button>
+
       </motion.div>
 
       {/* Phiên bản */}

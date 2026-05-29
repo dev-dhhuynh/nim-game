@@ -14,6 +14,7 @@ import ThemeSelector from '../components/ThemeSelector';
 import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
+import { getTheme } from '../utils/themes';
 
 const GamePage = () => {
   const {

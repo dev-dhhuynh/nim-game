@@ -10,6 +10,7 @@ import MenuPage    from './pages/MenuPage';
 import SetupPage   from './pages/SetupPage';
 import GamePage    from './pages/GamePage';
 import './styles/globals.css';
+import TutorialPage from './pages/TutorialPage';
 
 const pageVariants = {
   initial: { opacity: 0, scale: 0.98 },
@@ -23,12 +24,14 @@ const App = () => {
   // Áp dụng theme khi app khởi động
   useEffect(() => {
     applyTheme(settings.theme || 'default');
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.theme]);
 
   const renderPage = () => {
     switch (gamePhase) {
       case 'menu':    return <MenuPage  key='menu'  />;
       case 'setup':   return <SetupPage key='setup' />;
+      case 'tutorial': return <TutorialPage  key='tutorial' />;
       case 'playing':
       case 'gameover':return <GamePage  key='game'  />;
       default:        return <MenuPage  key='menu'  />;

@@ -294,4 +294,5 @@ export const useGameStore = create((set, get) => ({
   },
 
   goToSetup: () => set({ gamePhase: 'setup' }),
+  goToTutorial:  () => set({ gamePhase: 'tutorial' }),
 }));

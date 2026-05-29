@@ -69,14 +69,10 @@ const Pile = ({
   // Khi count thay đổi — cập nhật danh sách stones
   useEffect(() => {
     if (count < prevCount) {
-      // Que bị lấy đi — highlight hàng
       setHighlighted(true);
       setTimeout(() => setHighlighted(false), 800);
-
-      // Cập nhật stones — giữ lại đúng số lượng
       setStones((prev) => prev.slice(0, count));
     } else if (count > prevCount) {
-      // Que được thêm vào (reset game)
       setStones(
         Array.from({ length: count }, (_, i) => ({
           id:    i,
@@ -85,6 +81,7 @@ const Pile = ({
       );
     }
     setPrevCount(count);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]);
 
   // Khi reset game — tạo lại stones

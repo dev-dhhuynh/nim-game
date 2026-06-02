@@ -1,35 +1,35 @@
 // =============================================
-// GAME PAGE — Màn hình chơi chính
+// GAME PAGE — Màn hình chơi game chính
 // =============================================
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { getHint } from '../utils/nimLogic';
-import { getTheme } from '../utils/themes';
 import Pile from '../components/Pile';
 import PlayerPanel from '../components/PlayerPanel';
 import MoveHistory from '../components/MoveHistory';
 import GameOverModal from '../components/GameOverModal';
 import ThemeSelector from '../components/ThemeSelector';
+import AIvsAIControls from '../components/AIvsAIControls';
 import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
-import { getTheme } from '../utils/themes';
 
 const GamePage = () => {
   const {
     piles, currentPlayer, gamePhase, winner,
     moveHistory, isAIThinking, nimSum, settings,
-    turnCount, gameStartTime,
+    turnCount, gameStartTime, isAIvsAI,
+    aivsaiRunning, aivsaiSpeed,
     makeMove, undoMove, saveCurrentGame,
     goToMenu, startGame, updateSettings,
+    startAIvsAI, pauseAIvsAI, stepAIvsAI,
+    stopAIvsAI, setAIvsAISpeed,
   } = useGameStore();
 
   const [hint,        setHint]        = useState(null);
   const [showHint,    setShowHint]    = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-
-  const currentTheme = getTheme(settings.theme);
 
   // Đếm thời gian
   useEffect(() => {
@@ -42,12 +42,20 @@ const GamePage = () => {
     return () => clearInterval(interval);
   }, [gamePhase, gameStartTime]);
 
+  // Dừng AI vs AI khi unmount
+  useEffect(() => {
+    return () => stopAIvsAI();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const isPlayerTurn =
-    settings.gameMode === 'pvp' || currentPlayer === 0;
+    settings.gameMode === 'pvp' ||
+    (settings.gameMode === 'pvc' && currentPlayer === 0);
 
   // Click lấy que
   const handlePileClick = (pileIndex, removeCount) => {
     if (!isPlayerTurn || isAIThinking || gamePhase !== 'playing') return;
+    if (isAIvsAI) return; // AI vs AI không cho người click
     if (settings.soundEnabled) sounds.pick();
     makeMove(pileIndex, removeCount);
   };
@@ -82,12 +90,18 @@ const GamePage = () => {
   // Đổi theme
   const handleThemeChange = (themeKey) => {
     updateSettings({ theme: themeKey });
-    toast(`Đã đổi sang ${getTheme(themeKey).label}`, { icon: '🎨' });
+    toast(`Đã đổi chủ đề!`, { icon: '🎨' });
   };
 
   // Bật/tắt âm thanh
   const handleToggleSound = () => {
     updateSettings({ soundEnabled: !settings.soundEnabled });
+  };
+
+  // Reset AI vs AI
+  const handleAIvsAIReset = () => {
+    stopAIvsAI();
+    startGame(piles);
   };
 
   // Format mm:ss
@@ -97,7 +111,11 @@ const GamePage = () => {
     return `${m}:${sec}`;
   };
 
+  // Lấy tên người chơi
   const getName = (idx) => {
+    if (settings.gameMode === 'aivai') {
+      return idx === 0 ? settings.ai1Name : settings.ai2Name;
+    }
     if (settings.gameMode === 'pvc' && idx === 1) return settings.aiName;
     return settings.playerNames[idx];
   };
@@ -105,12 +123,18 @@ const GamePage = () => {
   const p0Moves = moveHistory.filter((m) => m.player === 0).length;
   const p1Moves = moveHistory.filter((m) => m.player === 1).length;
 
+  // Pile có bị disabled không
+  const isPileDisabled =
+    isAIvsAI                    || // AI vs AI không cho click
+    !isPlayerTurn               ||
+    isAIThinking                ||
+    gamePhase !== 'playing';
+
   return (
     <div className={styles.gamePage}>
 
       {/* ── THANH TRÊN ── */}
       <div className={styles.topBar}>
-
         <button
           className='btn btn-ghost'
           style={{ padding: '6px 12px', fontSize: '0.65rem' }}
@@ -120,11 +144,13 @@ const GamePage = () => {
         </button>
 
         <div className={styles.gameInfo}>
+          {/* Badge chế độ */}
           <span className='badge badge-primary'>
-            {settings.gameMode === 'pvp'
-              ? 'Người vs Người'
-              : `vs AI · ${settings.aiDifficulty}`}
+            {settings.gameMode === 'pvp'   && 'Người vs Người'}
+            {settings.gameMode === 'pvc'   && `vs AI · ${settings.aiDifficulty}`}
+            {settings.gameMode === 'aivai' && '🤖 Máy vs Máy'}
           </span>
+
           {settings.misereVariant && (
             <span className='badge badge-red'>Misère</span>
           )}
@@ -137,22 +163,17 @@ const GamePage = () => {
         </div>
 
         <div className={styles.topActions}>
-          {/* Chọn theme */}
           <ThemeSelector
             currentTheme={settings.theme}
             onChange={handleThemeChange}
           />
-
-          {/* Bật/tắt âm thanh */}
           <button
             className='btn btn-ghost'
             style={{ padding: '5px 10px', fontSize: '0.75rem' }}
             onClick={handleToggleSound}
-            title={settings.soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
           >
             {settings.soundEnabled ? '🔊' : '🔇'}
           </button>
-
           <button
             className='btn btn-ghost'
             style={{ padding: '5px 10px', fontSize: '0.65rem' }}
@@ -161,16 +182,18 @@ const GamePage = () => {
             💾 Lưu
           </button>
 
-          <button
-            className='btn btn-ghost'
-            style={{ padding: '5px 10px', fontSize: '0.65rem' }}
-            onClick={handleUndo}
-            disabled={moveHistory.length === 0}
-          >
-            ↩ Undo
-          </button>
+          {/* Chỉ hiện Undo khi không phải AI vs AI */}
+          {!isAIvsAI && (
+            <button
+              className='btn btn-ghost'
+              style={{ padding: '5px 10px', fontSize: '0.65rem' }}
+              onClick={handleUndo}
+              disabled={moveHistory.length === 0}
+            >
+              ↩ Undo
+            </button>
+          )}
         </div>
-
       </div>
 
       {/* ── NỘI DUNG CHÍNH ── */}
@@ -179,11 +202,12 @@ const GamePage = () => {
         {/* ── SIDEBAR TRÁI ── */}
         <div className={styles.sidebar}>
 
+          {/* Thông tin người chơi */}
           <PlayerPanel
             name={getName(0)}
             playerIndex={0}
             isActive={currentPlayer === 0 && gamePhase === 'playing'}
-            isAI={false}
+            isAI={isAIvsAI || false}
             moveCount={p0Moves}
           />
           <div className={styles.vsLabel}>VS</div>
@@ -191,10 +215,24 @@ const GamePage = () => {
             name={getName(1)}
             playerIndex={1}
             isActive={currentPlayer === 1 && gamePhase === 'playing'}
-            isAI={settings.gameMode === 'pvc'}
+            isAI={settings.gameMode === 'pvc' || isAIvsAI}
             moveCount={p1Moves}
             isThinking={isAIThinking}
           />
+
+          {/* Controls AI vs AI */}
+          {isAIvsAI && (
+            <AIvsAIControls
+              isRunning={aivsaiRunning}
+              speed={aivsaiSpeed}
+              moveCount={turnCount}
+              onStart={startAIvsAI}
+              onPause={pauseAIvsAI}
+              onStep={stepAIvsAI}
+              onReset={handleAIvsAIReset}
+              onSpeedChange={setAIvsAISpeed}
+            />
+          )}
 
           {/* Nim-Sum */}
           <div className={styles.nimBox}>
@@ -202,7 +240,9 @@ const GamePage = () => {
               <span className={styles.nimLabel}>Nim-Sum (XOR)</span>
               <span className={`
                 ${styles.nimVal}
-                ${nimSum === 0 ? styles.nimZero : styles.nimNonzero}
+                ${nimSum === 0
+                  ? styles.nimZero
+                  : styles.nimNonzero}
               `}>
                 {nimSum}
               </span>
@@ -228,7 +268,7 @@ const GamePage = () => {
         {/* ── BÀN CHƠI ── */}
         <div className={styles.board}>
 
-          {/* Banner lượt */}
+          {/* Banner lượt chơi */}
           <motion.div
             className={styles.turnBanner}
             key={currentPlayer}
@@ -248,7 +288,7 @@ const GamePage = () => {
                 >
                   ⟳
                 </motion.span>
-                &nbsp;{getName(1)} đang suy nghĩ...
+                &nbsp;{getName(currentPlayer)} đang suy nghĩ...
               </span>
             ) : (
               <span>
@@ -276,12 +316,7 @@ const GamePage = () => {
                 key={i}
                 pileIndex={i}
                 count={count}
-                isDisabled={
-                  !isPlayerTurn         ||
-                  isAIThinking          ||
-                  gamePhase !== 'playing'||
-                  count === 0
-                }
+                isDisabled={isPileDisabled || count === 0}
                 onClick={handlePileClick}
                 theme={settings.theme}
               />
@@ -307,23 +342,38 @@ const GamePage = () => {
             )}
           </AnimatePresence>
 
-          {/* Nút dưới */}
-          <div className={styles.boardActions}>
-            <button
-              className='btn btn-ghost'
-              style={{ fontSize: '0.72rem' }}
-              onClick={handleHint}
-            >
-              💡 Gợi ý
-            </button>
-            <button
-              className='btn btn-ghost'
-              style={{ fontSize: '0.72rem' }}
-              onClick={() => startGame(piles)}
-            >
-              ↺ Chơi lại
-            </button>
-          </div>
+          {/* Nút dưới — ẩn khi AI vs AI */}
+          {!isAIvsAI && (
+            <div className={styles.boardActions}>
+              <button
+                className='btn btn-ghost'
+                style={{ fontSize: '0.72rem' }}
+                onClick={handleHint}
+              >
+                💡 Gợi ý
+              </button>
+              <button
+                className='btn btn-ghost'
+                style={{ fontSize: '0.72rem' }}
+                onClick={() => startGame(piles)}
+              >
+                ↺ Chơi lại
+              </button>
+            </div>
+          )}
+
+          {/* Nút chơi lại khi AI vs AI */}
+          {isAIvsAI && (
+            <div className={styles.boardActions}>
+              <button
+                className='btn btn-ghost'
+                style={{ fontSize: '0.72rem' }}
+                onClick={handleAIvsAIReset}
+              >
+                ↺ Ván mới
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

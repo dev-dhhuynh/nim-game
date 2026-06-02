@@ -39,11 +39,16 @@ const DEFAULT_SETTINGS = {
   misereVariant: false,
   soundEnabled:  true,
   theme:         'default',
+
+  // AI vs AI
+  ai1Difficulty: 'hard',
+  ai2Difficulty: 'hard',
+  ai1Name:       'Bot Alpha',
+  ai2Name:       'Bot Beta',
 };
 
 const savedSettings = loadSettings();
 
-// Áp dụng theme đã lưu ngay khi load app
 if (savedSettings?.theme) {
   applyTheme(savedSettings.theme);
 }
@@ -61,7 +66,6 @@ export const useGameStore = create((set, get) => ({
     set({ settings: newSettings });
     saveSettings(newSettings);
 
-    // Nếu đổi theme — áp dụng màu mới + đổi nhạc
     if (partial.theme) {
       applyTheme(partial.theme);
       if (newSettings.soundEnabled) {
@@ -69,7 +73,6 @@ export const useGameStore = create((set, get) => ({
       }
     }
 
-    // Nếu bật/tắt âm thanh
     if (partial.soundEnabled !== undefined) {
       setSoundEnabled(partial.soundEnabled);
       if (partial.soundEnabled) {
@@ -91,12 +94,20 @@ export const useGameStore = create((set, get) => ({
   turnCount:     0,
   gameStartTime: null,
 
+  // ── AI vs AI state ─────────────────────────
+  isAIvsAI:       false,
+  aivsaiRunning:  false,
+  aivsaiSpeed:    'normal',
+  aivsaiInterval: null,
+
   // ── Bắt đầu game mới ───────────────────────
   startGame: (piles) => {
-    const initPiles  = piles || get().piles;
+    const initPiles    = piles || get().piles;
     const { settings } = get();
 
-    // Bắt đầu nhạc nền theo theme
+    // Dừng AI vs AI nếu đang chạy
+    get().stopAIvsAI();
+
     if (settings.soundEnabled) {
       playBgMusic(settings.theme);
     }
@@ -111,6 +122,8 @@ export const useGameStore = create((set, get) => ({
       nimSum:        calcNimSum(initPiles),
       turnCount:     0,
       gameStartTime: Date.now(),
+      isAIvsAI:      settings.gameMode === 'aivai',
+      aivsaiRunning: false,
     });
     deleteSavedGame();
   },
@@ -158,10 +171,10 @@ export const useGameStore = create((set, get) => ({
         winner = currentPlayer;
       }
 
-      // Dừng nhạc nền
+      // Dừng AI vs AI
+      get().stopAIvsAI();
       stopBgMusic();
 
-      // Âm thanh thắng/thua
       if (settings.soundEnabled) {
         if (settings.gameMode === 'pvc') {
           if (winner === 0) playWinSound();
@@ -208,7 +221,7 @@ export const useGameStore = create((set, get) => ({
     return true;
   },
 
-  // ── AI tự động đi ──────────────────────────
+  // ── AI tự động đi (PvC) ────────────────────
   triggerAIMove: () => {
     const { piles, settings, gamePhase } = get();
     if (gamePhase !== 'playing') return;
@@ -226,6 +239,82 @@ export const useGameStore = create((set, get) => ({
         set({ isAIThinking: false });
       }
     }, 600);
+  },
+
+  // ── AI vs AI: đi một bước ──────────────────
+  stepAIvsAI: () => {
+    const { piles, currentPlayer, settings, gamePhase } = get();
+    if (gamePhase !== 'playing') return;
+
+    // Chọn độ khó theo AI nào đang đi
+    const difficulty = currentPlayer === 0
+      ? settings.ai1Difficulty
+      : settings.ai2Difficulty;
+
+    set({ isAIThinking: true });
+
+    const move = calcAIMove(piles, difficulty);
+    if (move) {
+      if (settings.soundEnabled) sounds.pick();
+      set({ isAIThinking: false });
+      get().makeMove(move.pileIndex, move.removeCount);
+    } else {
+      set({ isAIThinking: false });
+    }
+  },
+
+  // ── AI vs AI: bắt đầu tự chạy ─────────────
+  startAIvsAI: () => {
+    const { aivsaiSpeed, gamePhase } = get();
+    if (gamePhase !== 'playing') return;
+
+    // Delay theo tốc độ
+    const delayMap = { slow: 1500, normal: 800, fast: 300 };
+    const delay    = delayMap[aivsaiSpeed] || 800;
+
+    const interval = setInterval(() => {
+      const { gamePhase: phase } = get();
+      if (phase !== 'playing') {
+        get().stopAIvsAI();
+        return;
+      }
+      get().stepAIvsAI();
+    }, delay);
+
+    set({ aivsaiRunning: true, aivsaiInterval: interval });
+  },
+
+  // ── AI vs AI: tạm dừng ─────────────────────
+  pauseAIvsAI: () => {
+    const { aivsaiInterval } = get();
+    if (aivsaiInterval) {
+      clearInterval(aivsaiInterval);
+    }
+    set({ aivsaiRunning: false, aivsaiInterval: null });
+  },
+
+  // ── AI vs AI: dừng hẳn ─────────────────────
+  stopAIvsAI: () => {
+    const { aivsaiInterval } = get();
+    if (aivsaiInterval) {
+      clearInterval(aivsaiInterval);
+    }
+    set({
+      aivsaiRunning:  false,
+      aivsaiInterval: null,
+    });
+  },
+
+  // ── AI vs AI: đổi tốc độ ──────────────────
+  setAIvsAISpeed: (speed) => {
+    const { aivsaiRunning } = get();
+    set({ aivsaiSpeed: speed });
+
+    // Nếu đang chạy thì restart với tốc độ mới
+    if (aivsaiRunning) {
+      get().pauseAIvsAI();
+      setTimeout(() => get().startAIvsAI(), 100);
+    }
   },
 
   // ── Hoàn tác ───────────────────────────────
@@ -268,7 +357,6 @@ export const useGameStore = create((set, get) => ({
     const saved = loadGame();
     if (!saved) return false;
 
-    // Áp dụng theme đã lưu
     if (saved.settings?.theme) {
       applyTheme(saved.settings.theme);
     }
@@ -289,10 +377,11 @@ export const useGameStore = create((set, get) => ({
 
   // ── Điều hướng ─────────────────────────────
   goToMenu: () => {
+    get().stopAIvsAI();
     stopBgMusic();
     set({ gamePhase: 'menu' });
   },
 
-  goToSetup: () => set({ gamePhase: 'setup' }),
-  goToTutorial:  () => set({ gamePhase: 'tutorial' }),
+  goToSetup:    () => set({ gamePhase: 'setup'    }),
+  goToTutorial: () => set({ gamePhase: 'tutorial' }),
 }));

@@ -1,0 +1,143 @@
+/* Khung controls */
+.controls {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--accent-primary);
+}
+
+.moveCount {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+}
+
+/* Tốc độ */
+.speedRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.speedBtns {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+}
+
+.speedBtn {
+    flex: 1;
+    padding: 5px 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.speedBtn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.speedActive {
+    border-color: var(--accent-primary) !important;
+    background: rgba(0, 245, 196, 0.1) !important;
+    color: var(--accent-primary) !important;
+}
+
+/* Nút hành động */
+.actionRow {
+    display: flex;
+    gap: 6px;
+}
+
+.actionBtn {
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.actionBtn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Nút chạy/dừng */
+.btnPlay {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+}
+
+.btnPlay:hover:not(:disabled) {
+    background: #00ffd0;
+    box-shadow: 0 0 15px rgba(0, 245, 196, 0.4);
+}
+
+/* Nút từng bước */
+.btnStep {
+    background: transparent;
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+}
+
+.btnStep:hover:not(:disabled) {
+    background: rgba(255, 208, 0, 0.1);
+}
+
+/* Nút reset */
+.btnReset {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.btnReset:hover {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+    background: rgba(255, 69, 113, 0.08);
+}
+
+/* Chú thích */
+.note {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    text-align: center;
+    font-style: italic;
+}

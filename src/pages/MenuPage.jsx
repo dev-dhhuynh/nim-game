@@ -8,7 +8,13 @@ import { hasSavedGame } from '../utils/storage';
 import styles from './MenuPage.module.css';
 
 const MenuPage = () => {
-  const { goToSetup, loadSavedGame, goToTutorial } = useGameStore();
+  const {
+    goToSetup,
+    loadSavedGame,
+    goToTutorial,
+    goToStats,
+  } = useGameStore();
+
   const [savedExists, setSavedExists] = useState(false);
 
   // Kiểm tra có game đã lưu không
@@ -57,6 +63,7 @@ const MenuPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
+        {/* Chơi mới */}
         <button
           className={`btn btn-primary ${styles.btnMain}`}
           onClick={goToSetup}
@@ -64,7 +71,7 @@ const MenuPage = () => {
           ▶ Chơi Mới
         </button>
 
-        {/* Chỉ hiện nút này nếu có game đã lưu */}
+        {/* Chỉ hiện nếu có game đã lưu */}
         {savedExists && (
           <button
             className={`btn btn-secondary ${styles.btnMain}`}
@@ -74,7 +81,7 @@ const MenuPage = () => {
           </button>
         )}
 
-        {/* Nút hướng dẫn — thêm mới */}
+        {/* Hướng dẫn */}
         <button
           className={`btn btn-ghost ${styles.btnMain}`}
           onClick={goToTutorial}
@@ -82,6 +89,28 @@ const MenuPage = () => {
           📖 Hướng Dẫn
         </button>
 
+        {/* Thống kê */}
+        <button
+          className={`btn btn-ghost ${styles.btnMain}`}
+          onClick={goToStats}
+        >
+          📊 Thống Kê
+        </button>
+
+      </motion.div>
+
+      {/* Hướng dẫn nhanh */}
+      <motion.div
+        className={styles.howto}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <p className={styles.howtoTitle}>CÁCH CHƠI</p>
+        <p>
+          Lấy bất kỳ số que từ <em>một hàng</em>.
+          Người lấy que <strong>cuối cùng thắng</strong>.
+        </p>
       </motion.div>
 
       {/* Phiên bản */}

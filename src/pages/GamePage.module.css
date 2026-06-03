@@ -7,7 +7,7 @@
     overflow: hidden;
 }
 
-/* ── Thanh trên ── */
+/* ── Thanh trên — màu solid, không dính ảnh nền ── */
 .topBar {
     display: flex;
     align-items: center;
@@ -17,6 +17,8 @@
     background: var(--bg-secondary);
     flex-shrink: 0;
     gap: 12px;
+    position: relative;
+    z-index: 10;
 }
 
 .gameInfo {
@@ -49,7 +51,7 @@
     overflow: hidden;
 }
 
-/* ── Sidebar trái ── */
+/* ── Sidebar trái — nền tối mờ, không dính ảnh nền ── */
 .sidebar {
     width: 250px;
     flex-shrink: 0;
@@ -60,6 +62,8 @@
     gap: 10px;
     padding: 12px;
     overflow-y: auto;
+    position: relative;
+    z-index: 5;
 }
 
 .vsLabel {
@@ -116,13 +120,12 @@
     line-height: 1.4;
 }
 
-/* Lịch sử */
 .historyWrap {
     flex: 1;
     min-height: 120px;
 }
 
-/* ── Bàn chơi giữa ── */
+/* ── Bàn chơi — nơi ảnh nền hiển thị ── */
 .board {
     flex: 1;
     display: flex;
@@ -132,19 +135,23 @@
     gap: 20px;
     padding: 24px;
     overflow-y: auto;
+    position: relative;
 }
 
 /* Banner lượt chơi */
 .turnBanner {
     font-family: var(--font-body);
     font-size: 1rem;
-    color: var(--text-primary);
-    /* đổi từ text-secondary sang text-primary */
+    color: #ffffff;
     text-align: center;
     padding: 8px 24px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
+    backdrop-filter: blur(6px);
+    position: relative;
+    z-index: 2;
+    font-weight: 600;
 }
 
 .aiThinking {
@@ -160,6 +167,8 @@
     gap: 14px;
     width: 100%;
     max-width: 680px;
+    position: relative;
+    z-index: 2;
 }
 
 /* Hộp gợi ý */
@@ -169,17 +178,20 @@
     font-size: 0.88rem;
     text-align: center;
     max-width: 420px;
+    backdrop-filter: blur(6px);
+    position: relative;
+    z-index: 2;
 }
 
 .hintWin {
-    background: rgba(0, 245, 196, 0.08);
-    border: 1px solid rgba(0, 245, 196, 0.25);
+    background: rgba(0, 245, 196, 0.15);
+    border: 1px solid rgba(0, 245, 196, 0.4);
     color: var(--accent-primary);
 }
 
 .hintLose {
-    background: rgba(255, 56, 100, 0.08);
-    border: 1px solid rgba(255, 56, 100, 0.25);
+    background: rgba(255, 56, 100, 0.15);
+    border: 1px solid rgba(255, 56, 100, 0.4);
     color: var(--accent-red);
 }
 
@@ -187,4 +199,6 @@
 .boardActions {
     display: flex;
     gap: 10px;
+    position: relative;
+    z-index: 2;
 }

@@ -85,6 +85,7 @@ export const useGameStore = create((set, get) => ({
 
   // ── Trạng thái game ────────────────────────
   piles:         [3, 5, 7],
+  initialPiles:  [3, 5, 7],
   currentPlayer: 0,
   gamePhase:     'menu',
   winner:        null,
@@ -102,7 +103,7 @@ export const useGameStore = create((set, get) => ({
 
   // ── Bắt đầu game mới ───────────────────────
   startGame: (piles) => {
-    const initPiles    = piles || get().piles;
+  const initPiles = piles || get().initialPiles;
     const { settings } = get();
 
     // Dừng AI vs AI nếu đang chạy
@@ -114,6 +115,7 @@ export const useGameStore = create((set, get) => ({
 
     set({
       piles:         initPiles,
+       initialPiles:  initPiles,
       currentPlayer: 0,
       gamePhase:     'playing',
       winner:        null,

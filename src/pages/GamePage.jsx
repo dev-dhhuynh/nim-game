@@ -16,7 +16,7 @@ import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
 
-// Style dùng chung cho các nút nổi trên ảnh nền
+// Style nút nổi trên ảnh nền
 const btnOnBg = {
   background: 'rgba(0, 0, 0, 0.65)',
   border:     '1px solid rgba(255, 255, 255, 0.5)',
@@ -29,6 +29,7 @@ const GamePage = () => {
     moveHistory, isAIThinking, nimSum, settings,
     turnCount, gameStartTime, isAIvsAI,
     aivsaiRunning, aivsaiSpeed, initialPiles,
+    countdownLeft,
     makeMove, undoMove, saveCurrentGame,
     goToMenu, startGame, updateSettings,
     startAIvsAI, pauseAIvsAI, stepAIvsAI,
@@ -42,7 +43,7 @@ const GamePage = () => {
   const currentTheme = getTheme(settings.theme || 'default');
   const hasBgImage   = !!currentTheme.bgImage;
 
-  // Đếm thời gian
+  // Đếm thời gian tổng
   useEffect(() => {
     if (gamePhase !== 'playing') return;
     const interval = setInterval(() => {
@@ -127,6 +128,13 @@ const GamePage = () => {
     return settings.playerNames[idx];
   };
 
+  // Màu countdown theo mức độ khẩn cấp
+  const getCountdownColor = () => {
+    if (countdownLeft <= 5)  return 'var(--accent-red)';
+    if (countdownLeft <= 10) return 'var(--accent-gold)';
+    return 'var(--accent-primary)';
+  };
+
   const p0Moves = moveHistory.filter((m) => m.player === 0).length;
   const p1Moves = moveHistory.filter((m) => m.player === 1).length;
 
@@ -164,6 +172,22 @@ const GamePage = () => {
           <span className={styles.turnLabel}>
             Lượt #{turnCount + 1}
           </span>
+
+          {/* Đồng hồ đếm ngược */}
+          {settings.countdownEnabled && !isAIvsAI && gamePhase === 'playing' && (
+            <motion.span
+              className={styles.countdown}
+              style={{ color: getCountdownColor() }}
+              key={countdownLeft}
+              animate={countdownLeft <= 5
+                ? { scale: [1, 1.2, 1] }
+                : { scale: 1 }
+              }
+              transition={{ duration: 0.3 }}
+            >
+              ⏳ {countdownLeft}s
+            </motion.span>
+          )}
         </div>
 
         <div className={styles.topActions}>
@@ -346,7 +370,7 @@ const GamePage = () => {
             )}
           </AnimatePresence>
 
-          {/* Nút dưới — nổi rõ trên ảnh nền */}
+          {/* Nút dưới */}
           {!isAIvsAI && (
             <div className={styles.boardActions}>
               <button

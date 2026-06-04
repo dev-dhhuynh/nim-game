@@ -10,16 +10,18 @@ import styles from './SetupPage.module.css';
 const SetupPage = () => {
   const { settings, updateSettings, startGame, goToMenu } = useGameStore();
 
-  const [localPiles,  setLocalPiles]  = useState([3, 5, 7]);
-  const [playerNames, setPlayerNames] = useState([...settings.playerNames]);
-  const [aiName,      setAiName]      = useState(settings.aiName);
-  const [ai1Name,     setAi1Name]     = useState(settings.ai1Name);
-  const [ai2Name,     setAi2Name]     = useState(settings.ai2Name);
-  const [mode,        setMode]        = useState(settings.gameMode);
-  const [difficulty,  setDifficulty]  = useState(settings.aiDifficulty);
-  const [ai1Diff,     setAi1Diff]     = useState(settings.ai1Difficulty);
-  const [ai2Diff,     setAi2Diff]     = useState(settings.ai2Difficulty);
-  const [misere,      setMisere]      = useState(settings.misereVariant);
+  const [localPiles,    setLocalPiles]    = useState([3, 5, 7]);
+  const [playerNames,   setPlayerNames]   = useState([...settings.playerNames]);
+  const [aiName,        setAiName]        = useState(settings.aiName);
+  const [ai1Name,       setAi1Name]       = useState(settings.ai1Name);
+  const [ai2Name,       setAi2Name]       = useState(settings.ai2Name);
+  const [mode,          setMode]          = useState(settings.gameMode);
+  const [difficulty,    setDifficulty]    = useState(settings.aiDifficulty);
+  const [ai1Diff,       setAi1Diff]       = useState(settings.ai1Difficulty);
+  const [ai2Diff,       setAi2Diff]       = useState(settings.ai2Difficulty);
+  const [misere,        setMisere]        = useState(settings.misereVariant);
+  const [countdown,     setCountdown]     = useState(settings.countdownEnabled);
+  const [countdownSecs, setCountdownSecs] = useState(settings.countdownSeconds);
 
   const handleRandomize = () => {
     setLocalPiles(generateRandomPiles(3, 5, 10));
@@ -48,20 +50,21 @@ const SetupPage = () => {
 
   const handleStart = () => {
     updateSettings({
-      gameMode:      mode,
-      aiDifficulty:  difficulty,
+      gameMode:         mode,
+      aiDifficulty:     difficulty,
       playerNames,
       aiName,
       ai1Name,
       ai2Name,
-      ai1Difficulty: ai1Diff,
-      ai2Difficulty: ai2Diff,
-      misereVariant: misere,
+      ai1Difficulty:    ai1Diff,
+      ai2Difficulty:    ai2Diff,
+      misereVariant:    misere,
+      countdownEnabled: countdown,
+      countdownSeconds: countdownSecs,
     });
     startGame(localPiles);
   };
 
-  // Component chọn độ khó dùng lại được
   const DifficultyPicker = ({ value, onChange }) => (
     <div className={styles.diffBtns}>
       {[
@@ -71,10 +74,7 @@ const SetupPage = () => {
       ].map((d) => (
         <button
           key={d.key}
-          className={`
-            ${styles.diffBtn}
-            ${value === d.key ? styles.diffActive : ''}
-          `}
+          className={`${styles.diffBtn} ${value === d.key ? styles.diffActive : ''}`}
           style={{ '--diff-color': d.color }}
           onClick={() => onChange(d.key)}
         >
@@ -144,7 +144,6 @@ const SetupPage = () => {
               animate={{ opacity: 1,  y:  0 }}
               transition={{ duration: 0.2 }}
             >
-
               {/* PvP */}
               {mode === 'pvp' && (
                 <>
@@ -226,13 +225,9 @@ const SetupPage = () => {
                   <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
                     🤖 CẤU HÌNH HAI BOT
                   </p>
-
-                  {/* Bot 1 */}
                   <div className={styles.botCard}>
                     <div className={styles.botHeader}>
-                      <span style={{ color: 'var(--accent-primary)' }}>
-                        ◆ Bot 1
-                      </span>
+                      <span style={{ color: 'var(--accent-primary)' }}>◆ Bot 1</span>
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
@@ -247,18 +242,12 @@ const SetupPage = () => {
                     <p className={styles.sectionTitle} style={{ marginTop: 8 }}>
                       Độ khó
                     </p>
-                    <DifficultyPicker
-                      value={ai1Diff}
-                      onChange={setAi1Diff}
-                    />
+                    <DifficultyPicker value={ai1Diff} onChange={setAi1Diff} />
                   </div>
 
-                  {/* Bot 2 */}
                   <div className={styles.botCard} style={{ marginTop: 10 }}>
                     <div className={styles.botHeader}>
-                      <span style={{ color: 'var(--accent-gold)' }}>
-                        ◆ Bot 2
-                      </span>
+                      <span style={{ color: 'var(--accent-gold)' }}>◆ Bot 2</span>
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
@@ -273,14 +262,10 @@ const SetupPage = () => {
                     <p className={styles.sectionTitle} style={{ marginTop: 8 }}>
                       Độ khó
                     </p>
-                    <DifficultyPicker
-                      value={ai2Diff}
-                      onChange={setAi2Diff}
-                    />
+                    <DifficultyPicker value={ai2Diff} onChange={setAi2Diff} />
                   </div>
                 </>
               )}
-
             </motion.div>
 
             {/* Biến thể Misère */}
@@ -297,6 +282,50 @@ const SetupPage = () => {
               <span>Misère — người lấy que cuối <strong>thua</strong></span>
             </label>
 
+            {/* Đếm ngược */}
+            <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+              ⏱ ĐẾM NGƯỢC
+            </p>
+            <label className={styles.toggle}>
+              <input
+                type='checkbox'
+                checked={countdown}
+                onChange={(e) => setCountdown(e.target.checked)}
+                disabled={mode === 'aivai'}
+              />
+              <span className={styles.toggleSlider} />
+              <span>
+                Giới hạn thời gian mỗi lượt
+                {mode === 'aivai' && (
+                  <em style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                    {' '}(không dùng cho AI vs AI)
+                  </em>
+                )}
+              </span>
+            </label>
+
+            {countdown && mode !== 'aivai' && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1,  y:  0 }}
+                style={{ marginTop: 10 }}
+              >
+                <p className={styles.sectionTitle}>Số giây mỗi lượt</p>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {[10, 15, 20, 30, 60].map((sec) => (
+                    <button
+                      key={sec}
+                      className={`btn ${countdownSecs === sec ? 'btn-primary' : 'btn-ghost'}`}
+                      style={{ padding: '5px 14px', fontSize: '0.75rem' }}
+                      onClick={() => setCountdownSecs(sec)}
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
           </div>
 
           {/* ── CỘT PHẢI: Cấu hình hàng que ── */}
@@ -304,7 +333,6 @@ const SetupPage = () => {
 
             <p className={styles.sectionTitle}>🪵 CẤU HÌNH HÀNG QUE</p>
 
-            {/* Preset */}
             <div className={styles.presets}>
               {Object.entries(PRESETS).map(([key, preset]) => (
                 <button
@@ -323,7 +351,6 @@ const SetupPage = () => {
               </button>
             </div>
 
-            {/* Danh sách hàng */}
             <div className={styles.piles}>
               {localPiles.map((count, i) => (
                 <motion.div

@@ -2,20 +2,21 @@
 // THEMES — Định nghĩa toàn bộ chủ đề game
 // =============================================
 
-// Import ảnh nền
+// Import ảnh nền — đuôi .gif
+import bgDefault   from '../assets/images/default.gif';
 import bgChristmas from '../assets/images/christmas.jpg';
-import bgHalloween from '../assets/images/halloween.jpg';
-import bgSummer    from '../assets/images/summer.jpg';
+import bgHalloween from '../assets/images/halloween.gif';
+import bgSummer    from '../assets/images/summer.gif';
 
 export const THEMES = {
 
   // ── Mặc định ─────────────────────────────
   default: {
-    key:       'default',
-    label:     '🎮 Mặc định',
-    emoji:     null,
-    bgMusic:   'default',
-    bgImage:   null,        // không có ảnh nền
+    key:     'default',
+    label:   '🎮 Mặc định',
+    emoji:   null,
+    bgMusic: 'default',
+    bgImage: bgDefault,
 
     colors: {
       '--bg-primary':    '#0d0d14',
@@ -28,6 +29,7 @@ export const THEMES = {
       '--text-primary':  '#f0f0ff',
       '--text-secondary':'#a8a8c8',
       '--text-muted':    '#606080',
+      '--bg-overlay':    'transparent',
     },
   },
 
@@ -40,40 +42,41 @@ export const THEMES = {
     bgImage: bgChristmas,
 
     colors: {
-      '--bg-primary':    '#eaf4f0',
-      '--bg-secondary':  '#f5fbf8',
-      '--bg-card':       '#ffffff',
-      '--accent-primary':'#c95a5a',
-      '--accent-gold':   '#d8b24c',
-      '--accent-red':    '#d96c6c',
-      '--border':        '#d7e7df',
-      '--text-primary':  '#24352e',
-      '--text-secondary':'#4b6258',
-      '--text-muted':    '#7a8f86',
+      '--bg-primary':    '#0a1628',
+      '--bg-secondary':  '#0d1f35',
+      '--bg-card':       '#102440',
+      '--accent-primary':'#a8d8f0',
+      '--accent-gold':   '#ffd700',
+      '--accent-red':    '#ff4444',
+      '--border':        '#1e3a5a',
+      '--text-primary':  '#e8f4ff',
+      '--text-secondary':'#90b8d8',
+      '--text-muted':    '#506070',
+      '--bg-overlay':    'transparent',
     },
   },
 
   // ── Halloween ─────────────────────────────
-  halloween: {
-    key:     'halloween',
-    label:   '🎃 Halloween',
-    emoji:   '🎃',
-    bgMusic: 'halloween',
-    bgImage: bgHalloween,
+halloween: {
+  key:     'halloween',
+  label:   '🎃 Halloween',
+  emoji:   '🎃',
+  bgMusic: 'halloween',
+  bgImage: bgHalloween,
 
-    colors: {
-      '--bg-primary':    '#0f0a00',
-      '--bg-secondary':  '#1a1000',
-      '--bg-card':       '#221500',
-      '--accent-primary':'#ff6a00',
-      '--accent-gold':   '#cc44ff',
-      '--accent-red':    '#ff3333',
-      '--border':        '#3a2800',
-      '--text-primary':  '#fff0e0',
-      '--text-secondary':'#c8a870',
-      '--text-muted':    '#806040',
-    },
+  colors: {
+    '--bg-primary':    '#0d0d14',   /* giữ tối trung tính như default */
+    '--bg-secondary':  '#1a1a26',   /* giữ tối trung tính như default */
+    '--bg-card':       '#21212f',   /* giữ tối trung tính như default */
+    '--accent-primary':'#ff6a00',   /* cam bí ngô — chỉ dùng cho accent */
+    '--accent-gold':   '#ffaa00',
+    '--accent-red':    '#ff3300',
+    '--border':        '#35354a',   /* giữ viền như default */
+    '--text-primary':  '#fff0e0',   /* vàng ấm nhẹ */
+    '--text-secondary':'#c8a870',
+    '--text-muted':    '#806040',
   },
+},
 
   // ── Mùa Hè ───────────────────────────────
   summer: {
@@ -94,6 +97,7 @@ export const THEMES = {
       '--text-primary':  '#f0faff',
       '--text-secondary':'#80c8e0',
       '--text-muted':    '#406070',
+      '--bg-overlay':    'transparent',
     },
   },
 };

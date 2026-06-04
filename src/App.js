@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { useGameStore } from './store/gameStore';
 import { applyTheme } from './utils/themes';
 import SnowEffect   from './components/SnowEffect';
+import ThemeEffects from './components/ThemeEffects';
 import MenuPage     from './pages/MenuPage';
 import SetupPage    from './pages/SetupPage';
 import GamePage     from './pages/GamePage';
@@ -46,8 +47,11 @@ const App = () => {
       className='bg-grid'
       style={{ width: '100%', height: '100%', position: 'relative' }}
     >
-      {/* Tuyết rơi — chỉ hiện khi theme Giáng Sinh */}
+      {/* Tuyết rơi — chỉ Giáng Sinh */}
       <SnowEffect active={settings.theme === 'christmas'} />
+
+      {/* Hiệu ứng theo theme — default, halloween, summer */}
+      <ThemeEffects theme={settings.theme} />
 
       {/* Nội dung app */}
       <div style={{

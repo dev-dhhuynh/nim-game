@@ -1,7 +1,6 @@
-/* Khung hàng que */
 .pile {
-    background: rgba(10, 40, 60, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.65);
+    border: 2px solid var(--accent-primary);
     border-radius: var(--radius-lg);
     padding: 16px;
     display: flex;
@@ -11,12 +10,24 @@
     min-height: 130px;
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(2px);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.6),
+        inset 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .pile:hover:not(.pileDisabled) {
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary);
+    box-shadow:
+        0 0 20px var(--accent-primary),
+        0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.pile:hover:not(.pileDisabled) {
+    border-color: var(--accent-primary);
+    box-shadow:
+        0 0 15px var(--accent-primary),
+        0 0 30px rgba(255, 106, 0, 0.4);
 }
 
 .pileDisabled {
@@ -40,8 +51,9 @@
     font-family: var(--font-mono);
     font-size: 0.62rem;
     letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-primary);
     text-transform: uppercase;
+    font-weight: 700;
 }
 
 .pileCount {
@@ -49,6 +61,7 @@
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--accent-primary);
+    text-shadow: 0 0 10px var(--accent-primary);
 }
 
 /* Khu vực que */
@@ -60,15 +73,17 @@
     align-content: flex-start;
 }
 
+/* Một viên que — dùng accent-primary của từng theme */
 .stone {
     width: 28px;
     height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.3rem;
     color: var(--accent-primary);
-    filter: drop-shadow(0 0 4px rgba(0, 245, 196, 0.5));
+    filter:
+        drop-shadow(0 0 16px var(--accent-primary)) drop-shadow(0 0 32px var(--accent-primary)) drop-shadow(0 2px 6px rgba(0, 0, 0, 1));
     cursor: default;
     user-select: none;
 }
@@ -85,9 +100,10 @@
 .selectorLabel {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-primary);
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    font-weight: 700;
 }
 
 .selectorBtns {
@@ -100,31 +116,38 @@
 .numBtn {
     width: 30px;
     height: 30px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--accent-primary);
     border-radius: 6px;
-    color: #ffffff;
+    color: var(--text-primary);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 0 6px var(--accent-primary);
 }
 
 .numBtn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 0 14px var(--accent-primary);
+}
+
+.numBtn:hover {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 0 14px var(--accent-primary);
 }
 
 /* Hàng trống */
 .emptyPile {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
     text-align: center;
     padding: 10px;
     letter-spacing: 0.1em;

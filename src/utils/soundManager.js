@@ -1,8 +1,21 @@
 // =============================================
 // SOUND MANAGER — Quản lý âm thanh game
-// Dùng Web Audio API, không cần file mp3
 // =============================================
 
+// Import file nhạc nền
+import bgDefault   from '../assets/sounds/default.mp3';
+import bgChristmas from '../assets/sounds/christmas.mp3';
+import bgHalloween from '../assets/sounds/halloween.mp3';
+import bgSummer    from '../assets/sounds/summer.mp3';
+
+const MUSIC_MAP = {
+  default:   bgDefault,
+  christmas: bgChristmas,
+  halloween: bgHalloween,
+  summer:    bgSummer,
+};
+
+// ── AudioContext cho sound effects ──
 let audioCtx = null;
 
 const getCtx = () => {
@@ -35,10 +48,7 @@ const playTone = (frequency, type, duration, volume = 0.3, delay = 0) => {
   }
 };
 
-// ---------------------------------------------
-// Các âm thanh cụ thể
-// ---------------------------------------------
-
+// ── Sound effects ──
 export const playPickSound = () => {
   playTone(440, 'sine', 0.08, 0.2);
   playTone(550, 'sine', 0.08, 0.15, 0.05);
@@ -48,7 +58,6 @@ export const playTurnSound = () => {
   playTone(300, 'triangle', 0.1, 0.15);
 };
 
-// Dùng index i để tính delay — giữ nguyên
 export const playWinSound = () => {
   const notes = [523, 659, 784, 1047];
   notes.forEach((freq, i) => {
@@ -56,7 +65,6 @@ export const playWinSound = () => {
   });
 };
 
-// Dùng index i để tính delay — giữ nguyên
 export const playLoseSound = () => {
   const notes = [400, 350, 300, 250];
   notes.forEach((freq, i) => {
@@ -78,75 +86,40 @@ export const playUndoSound = () => {
   playTone(300, 'triangle', 0.1, 0.15, 0.08);
 };
 
-// ---------------------------------------------
-// Nhạc nền theo theme
-// ---------------------------------------------
-let bgMusicInterval = null;
-
-// Hàm phát một đoạn melody — dùng chung
-const playMelody = (melody, waveType) => {
-  let time = 0;
-  melody.forEach(([freq, dur]) => {
-    setTimeout(
-      () => playTone(freq, waveType, dur * 0.9, 0.1),
-      time * 1000
-    );
-    time += dur;
-  });
-};
+// ── Nhạc nền dùng file MP3 thật ──
+let bgAudio = null;
 
 export const playBgMusic = (theme = 'default') => {
   stopBgMusic();
 
-  if (theme === 'christmas') {
-    const melody = [
-      [659, 0.2], [659, 0.2], [659, 0.4],
-      [659, 0.2], [659, 0.2], [659, 0.4],
-      [659, 0.2], [784, 0.2], [523, 0.2], [587, 0.2],
-      [659, 0.8],
-    ];
-    playMelody(melody, 'sine');
-    bgMusicInterval = setInterval(
-      () => playMelody(melody, 'sine'),
-      5000
-    );
+  const src = MUSIC_MAP[theme];
+  if (!src) return;
 
-  } else if (theme === 'halloween') {
-    const melody = [
-      [220, 0.3], [233, 0.3], [220, 0.3], [207, 0.6],
-      [220, 0.3], [233, 0.3], [220, 0.6],
-    ];
-    playMelody(melody, 'sawtooth');
-    bgMusicInterval = setInterval(
-      () => playMelody(melody, 'sawtooth'),
-      4000
-    );
-
-  } else if (theme === 'summer') {
-    const melody = [
-      [523, 0.2], [587, 0.2], [659, 0.2], [698, 0.2],
-      [784, 0.4], [698, 0.2], [659, 0.4],
-      [587, 0.2], [523, 0.4],
-    ];
-    playMelody(melody, 'triangle');
-    bgMusicInterval = setInterval(
-      () => playMelody(melody, 'triangle'),
-      4000
-    );
+  try {
+    bgAudio = new Audio(src);
+    bgAudio.loop   = true;     // lặp vô tận
+    bgAudio.volume = 0.35;     // âm lượng 35%
+    bgAudio.play().catch((e) => {
+      console.warn('Nhạc nền không phát được:', e);
+    });
+  } catch (e) {
+    console.warn('Lỗi nhạc nền:', e);
   }
-  // theme 'default' không có nhạc nền
 };
 
 export const stopBgMusic = () => {
-  if (bgMusicInterval) {
-    clearInterval(bgMusicInterval);
-    bgMusicInterval = null;
+  if (bgAudio) {
+    bgAudio.pause();
+    bgAudio.currentTime = 0;
+    bgAudio = null;
   }
 };
 
-// ---------------------------------------------
-// Bật/tắt âm thanh
-// ---------------------------------------------
+export const setBgMusicVolume = (volume) => {
+  if (bgAudio) bgAudio.volume = volume;
+};
+
+// ── Bật/tắt âm thanh ──
 let soundEnabled = true;
 
 export const setSoundEnabled = (val) => {

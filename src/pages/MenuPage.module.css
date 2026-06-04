@@ -69,9 +69,16 @@
 }
 
 /* 3 hình thoi nhỏ */
+.logoContainer {
+    position: relative;
+}
+
 .logoIcons {
     display: flex;
+    justify-content: center;
     gap: 10px;
+    margin-bottom: 10px;
+    transform: translateX(-16px);
 }
 
 .logoIcons span {

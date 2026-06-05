@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { PRESETS, generateRandomPiles } from '../utils/nimLogic';
+import ThemeSelector from '../components/ThemeSelector';
 import styles from './SetupPage.module.css';
 
 const SetupPage = () => {
@@ -103,7 +104,10 @@ const SetupPage = () => {
             ← Quay lại
           </button>
           <h2 className={styles.title}>THIẾT LẬP GAME</h2>
-          <div />
+          <ThemeSelector
+            currentTheme={settings.theme}
+            onChange={(themeKey) => updateSettings({ theme: themeKey })}
+          />
         </div>
 
         <div className={styles.grid}>
@@ -328,7 +332,7 @@ const SetupPage = () => {
 
           </div>
 
-          {/* ── CỘT PHẢI: Cấu hình hàng que ── */}
+          {/* ── CỘT PHẢI ── */}
           <div className={styles.section}>
 
             <p className={styles.sectionTitle}>🪵 CẤU HÌNH HÀNG QUE</p>

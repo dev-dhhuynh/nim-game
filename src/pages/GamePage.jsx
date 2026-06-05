@@ -16,7 +16,6 @@ import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
 
-// Style nút nổi trên ảnh nền
 const btnOnBg = {
   background: 'rgba(0, 0, 0, 0.65)',
   border:     '1px solid rgba(255, 255, 255, 0.5)',
@@ -31,7 +30,7 @@ const GamePage = () => {
     aivsaiRunning, aivsaiSpeed, initialPiles,
     countdownLeft,
     makeMove, undoMove, saveCurrentGame,
-    goToMenu, startGame, updateSettings,
+    goToMenu, goToSetup, startGame, updateSettings,
     startAIvsAI, pauseAIvsAI, stepAIvsAI,
     stopAIvsAI, setAIvsAISpeed,
   } = useGameStore();
@@ -128,7 +127,6 @@ const GamePage = () => {
     return settings.playerNames[idx];
   };
 
-  // Màu countdown theo mức độ khẩn cấp
   const getCountdownColor = () => {
     if (countdownLeft <= 5)  return 'var(--accent-red)';
     if (countdownLeft <= 10) return 'var(--accent-gold)';
@@ -152,9 +150,9 @@ const GamePage = () => {
         <button
           className='btn btn-ghost'
           style={{ padding: '6px 12px', fontSize: '0.65rem' }}
-          onClick={goToMenu}
+          onClick={goToSetup}
         >
-          ← Menu
+          ← Thiết lập
         </button>
 
         <div className={styles.gameInfo}>
@@ -295,7 +293,6 @@ const GamePage = () => {
             backgroundRepeat:   'no-repeat',
           } : {}}
         >
-
           {/* Banner lượt chơi */}
           <motion.div
             className={styles.turnBanner}
@@ -422,7 +419,7 @@ const GamePage = () => {
             playerNames={settings.playerNames}
             settings={settings}
             onRestart={handleRestart}
-            onMenu={goToMenu}
+            onMenu={goToSetup}
           />
         )}
       </AnimatePresence>

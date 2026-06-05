@@ -137,17 +137,21 @@ export const useGameStore = create((set, get) => ({
         }
 
         // PvP: chuyển lượt
-        const nextPlayer = currentPlayer === 0 ? 1 : 0;
-        set({
-          currentPlayer: nextPlayer,
-          countdownLeft: settings.countdownSeconds,
-        });
-        get().startCountdown();
+        // PvP: hết giờ → người đang đi THUA
+const winner = currentPlayer === 0 ? 1 : 0;
 
-        // Nếu PvC và đến lượt AI
-        if (s.gameMode === 'pvc' && nextPlayer === 1) {
-          setTimeout(() => get().triggerAIMove(), 300);
-        }
+if (s.soundEnabled) playLoseSound();
+
+saveToHistory({
+  winner,
+  mode:       s.gameMode,
+  difficulty: s.aiDifficulty,
+  turns:      get().turnCount,
+  duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
+});
+
+stopBgMusic();
+set({ gamePhase: 'gameover', winner, nimSum: 0 });
 
       } else {
         set({ countdownLeft: countdownLeft - 1 });

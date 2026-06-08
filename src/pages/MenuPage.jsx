@@ -1,26 +1,43 @@
 // =============================================
 // MENU PAGE — Màn hình chính
 // =============================================
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
-import { hasSavedGame } from '../utils/storage';
+import { hasAutoSave } from '../utils/storage';
+import HistoryModal from '../components/HistoryModal';
 import styles from './MenuPage.module.css';
 
 const MenuPage = () => {
   const {
     goToSetup,
-    loadSavedGame,
     goToTutorial,
     goToStats,
+    continueGame,
+    startGame,
+    updateSettings,
   } = useGameStore();
 
-  const [savedExists, setSavedExists] = useState(false);
+  const [showHistory,  setShowHistory]  = useState(false);
+  const [hasContinue,  setHasContinue]  = useState(false);
 
-  // Kiểm tra có game đã lưu không
   useEffect(() => {
-    setSavedExists(hasSavedGame());
+    setHasContinue(hasAutoSave());
   }, []);
+
+  // Chơi lại với cùng cấu hình ván cũ
+  const handleReplay = (historyItem) => {
+    if (historyItem.initialPiles) {
+      updateSettings({
+        gameMode:      historyItem.mode      || 'pvp',
+        aiDifficulty:  historyItem.difficulty || 'hard',
+        misereVariant: historyItem.misere     || false,
+        playerNames:   historyItem.playerNames || ['Người Chơi 1', 'Người Chơi 2'],
+        aiName:        historyItem.aiName      || 'NIM-Bot',
+      });
+      startGame(historyItem.initialPiles);
+    }
+  };
 
   return (
     <div className={styles.menu}>
@@ -39,20 +56,16 @@ const MenuPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
       >
-        {/* 3 hình thoi nhỏ trên logo */}
         <div className={styles.logoIcons}>
           <span>◆</span>
           <span>◆</span>
           <span>◆</span>
         </div>
-
-        {/* Tên game */}
         <h1 className={styles.title}>
           <span className={styles.letterN}>N</span>
           <span className={styles.letterI}>I</span>
           <span className={styles.letterM}>M</span>
         </h1>
-
         <p className={styles.subtitle}>THE ANCIENT STRATEGY GAME</p>
       </motion.div>
 
@@ -63,7 +76,6 @@ const MenuPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
-        {/* Chơi mới */}
         <button
           className={`btn btn-primary ${styles.btnMain}`}
           onClick={goToSetup}
@@ -71,17 +83,23 @@ const MenuPage = () => {
           ▶ Chơi Mới
         </button>
 
-        {/* Chỉ hiện nếu có game đã lưu */}
-        {savedExists && (
+        {/* Chỉ hiện khi có ván dang dở */}
+        {hasContinue && (
           <button
             className={`btn btn-secondary ${styles.btnMain}`}
-            onClick={loadSavedGame}
+            onClick={continueGame}
           >
             ↩ Tiếp Tục
           </button>
         )}
 
-        {/* Hướng dẫn */}
+        <button
+          className={`btn btn-ghost ${styles.btnMain}`}
+          onClick={() => setShowHistory(true)}
+        >
+          📁 Lịch Sử Đấu
+        </button>
+
         <button
           className={`btn btn-ghost ${styles.btnMain}`}
           onClick={goToTutorial}
@@ -89,14 +107,12 @@ const MenuPage = () => {
           📖 Hướng Dẫn
         </button>
 
-        {/* Thống kê */}
         <button
           className={`btn btn-ghost ${styles.btnMain}`}
           onClick={goToStats}
         >
           📊 Thống Kê
         </button>
-
       </motion.div>
 
       {/* Hướng dẫn nhanh */}
@@ -115,6 +131,17 @@ const MenuPage = () => {
 
       {/* Phiên bản */}
       <div className={styles.version}>NIM v1.0 · Niên Luận Cơ Sở</div>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistory && (
+          <HistoryModal
+            isOpen={showHistory}
+            onReplay={handleReplay}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   );

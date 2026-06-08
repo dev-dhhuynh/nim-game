@@ -12,6 +12,7 @@ import MoveHistory from '../components/MoveHistory';
 import GameOverModal from '../components/GameOverModal';
 import ThemeSelector from '../components/ThemeSelector';
 import AIvsAIControls from '../components/AIvsAIControls';
+import HistoryModal from '../components/HistoryModal';
 import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
@@ -29,15 +30,16 @@ const GamePage = () => {
     turnCount, gameStartTime, isAIvsAI,
     aivsaiRunning, aivsaiSpeed, initialPiles,
     countdownLeft,
-    makeMove, undoMove, saveCurrentGame,
-    goToMenu, goToSetup, startGame, updateSettings,
+    makeMove, undoMove,
+    goToSetup, startGame, updateSettings,
     startAIvsAI, pauseAIvsAI, stepAIvsAI,
     stopAIvsAI, setAIvsAISpeed,
   } = useGameStore();
 
-  const [hint,        setHint]        = useState(null);
-  const [showHint,    setShowHint]    = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [hint,          setHint]          = useState(null);
+  const [showHint,      setShowHint]      = useState(false);
+  const [elapsedTime,   setElapsedTime]   = useState(0);
+  const [showHistory,   setShowHistory]   = useState(false);
 
   const currentTheme = getTheme(settings.theme || 'default');
   const hasBgImage   = !!currentTheme.bgImage;
@@ -77,16 +79,6 @@ const GamePage = () => {
     setTimeout(() => setShowHint(false), 4000);
   };
 
-  const handleSave = () => {
-    const ok = saveCurrentGame();
-    if (ok) {
-      if (settings.soundEnabled) sounds.save();
-      toast.success('Game đã được lưu!');
-    } else {
-      toast.error('Lưu thất bại!');
-    }
-  };
-
   const handleUndo = () => {
     if (moveHistory.length === 0) return;
     if (settings.soundEnabled) sounds.undo();
@@ -111,6 +103,20 @@ const GamePage = () => {
   const handleAIvsAIReset = () => {
     stopAIvsAI();
     startGame(initialPiles);
+  };
+
+  // Chơi lại từ lịch sử
+  const handleReplay = (historyItem) => {
+    if (historyItem.initialPiles) {
+      updateSettings({
+        gameMode:      historyItem.mode       || 'pvp',
+        aiDifficulty:  historyItem.difficulty  || 'hard',
+        misereVariant: historyItem.misere      || false,
+        playerNames:   historyItem.playerNames || ['Người Chơi 1', 'Người Chơi 2'],
+        aiName:        historyItem.aiName      || 'NIM-Bot',
+      });
+      startGame(historyItem.initialPiles);
+    }
   };
 
   const formatTime = (s) => {
@@ -203,9 +209,9 @@ const GamePage = () => {
           <button
             className='btn btn-ghost'
             style={{ padding: '5px 10px', fontSize: '0.65rem' }}
-            onClick={handleSave}
+            onClick={() => setShowHistory(true)}
           >
-            💾 Lưu
+            📁 Lịch sử
           </button>
           {!isAIvsAI && (
             <button
@@ -273,7 +279,7 @@ const GamePage = () => {
             </p>
           </div>
 
-          {/* Lịch sử */}
+          {/* Lịch sử nước đi */}
           <div className={styles.historyWrap}>
             <MoveHistory
               history={moveHistory}
@@ -407,7 +413,6 @@ const GamePage = () => {
               </button>
             </div>
           )}
-
         </div>
       </div>
 
@@ -420,6 +425,17 @@ const GamePage = () => {
             settings={settings}
             onRestart={handleRestart}
             onMenu={goToSetup}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── HISTORY MODAL ── */}
+      <AnimatePresence>
+        {showHistory && (
+          <HistoryModal
+            isOpen={showHistory}
+            onReplay={handleReplay}
+            onClose={() => setShowHistory(false)}
           />
         )}
       </AnimatePresence>

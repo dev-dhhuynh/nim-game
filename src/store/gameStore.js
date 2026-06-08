@@ -11,9 +11,9 @@ import {
   PRESETS,
 } from '../utils/nimLogic';
 import {
-  saveGame,
-  loadGame,
-  deleteSavedGame,
+  autoSaveGame,
+  loadAutoSave,
+  clearAutoSave,
   saveToHistory,
   saveSettings,
   loadSettings,
@@ -28,9 +28,6 @@ import {
 } from '../utils/soundManager';
 import { applyTheme } from '../utils/themes';
 
-// ---------------------------------------------
-// Cài đặt mặc định
-// ---------------------------------------------
 const DEFAULT_SETTINGS = {
   gameMode:         'pvp',
   aiDifficulty:     'hard',
@@ -48,14 +45,8 @@ const DEFAULT_SETTINGS = {
 };
 
 const savedSettings = loadSettings();
+if (savedSettings?.theme) applyTheme(savedSettings.theme);
 
-if (savedSettings?.theme) {
-  applyTheme(savedSettings.theme);
-}
-
-// ---------------------------------------------
-// Tạo store
-// ---------------------------------------------
 export const useGameStore = create((set, get) => ({
 
   // ── Cài đặt ────────────────────────────────
@@ -65,21 +56,14 @@ export const useGameStore = create((set, get) => ({
     const newSettings = { ...get().settings, ...partial };
     set({ settings: newSettings });
     saveSettings(newSettings);
-
     if (partial.theme) {
       applyTheme(partial.theme);
-      if (newSettings.soundEnabled) {
-        playBgMusic(partial.theme);
-      }
+      if (newSettings.soundEnabled) playBgMusic(partial.theme);
     }
-
     if (partial.soundEnabled !== undefined) {
       setSoundEnabled(partial.soundEnabled);
-      if (partial.soundEnabled) {
-        playBgMusic(newSettings.theme);
-      } else {
-        stopBgMusic();
-      }
+      if (partial.soundEnabled) playBgMusic(newSettings.theme);
+      else stopBgMusic();
     }
   },
 
@@ -105,59 +89,36 @@ export const useGameStore = create((set, get) => ({
   countdownLeft:  15,
   countdownTimer: null,
 
-  // ── Countdown functions ─────────────────────
+  // ── Countdown ──────────────────────────────
   startCountdown: () => {
     get().clearCountdown();
-
     const timer = setInterval(() => {
-      const { countdownLeft, gamePhase, settings } = get();
-
+      const { countdownLeft, gamePhase, settings: s } = get();
       if (gamePhase !== 'playing') {
         get().clearCountdown();
         return;
       }
-
       if (countdownLeft <= 1) {
-        // Hết giờ — chuyển lượt tự động
         get().clearCountdown();
-        const { currentPlayer, settings: s } = get();
-
-        // PvC: nếu hết giờ là lượt người thì AI thắng
-        if (s.gameMode === 'pvc' && currentPlayer === 0) {
-          if (s.soundEnabled) playLoseSound();
-          saveToHistory({
-            winner:     1,
-            mode:       s.gameMode,
-            difficulty: s.aiDifficulty,
-            turns:      get().turnCount,
-            duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
-          });
-          set({ gamePhase: 'gameover', winner: 1, nimSum: 0 });
-          return;
-        }
-
-        // PvP: chuyển lượt
-        // PvP: hết giờ → người đang đi THUA
-const winner = currentPlayer === 0 ? 1 : 0;
-
-if (s.soundEnabled) playLoseSound();
-
-saveToHistory({
-  winner,
-  mode:       s.gameMode,
-  difficulty: s.aiDifficulty,
-  turns:      get().turnCount,
-  duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
-});
-
-stopBgMusic();
-set({ gamePhase: 'gameover', winner, nimSum: 0 });
-
+        const { currentPlayer } = get();
+        const winner = currentPlayer === 0 ? 1 : 0;
+        if (s.soundEnabled) playLoseSound();
+        clearAutoSave();
+        saveToHistory({
+          winner,
+          mode:       s.gameMode,
+          difficulty: s.aiDifficulty,
+          turns:      get().turnCount,
+          duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
+          initialPiles: get().initialPiles,
+          endReason:  'timeout',
+        });
+        stopBgMusic();
+        set({ gamePhase: 'gameover', winner, nimSum: 0 });
       } else {
         set({ countdownLeft: countdownLeft - 1 });
       }
     }, 1000);
-
     set({ countdownTimer: timer });
   },
 
@@ -166,9 +127,7 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
     const { settings, gamePhase } = get();
     if (gamePhase !== 'playing') return;
     set({ countdownLeft: settings.countdownSeconds });
-    if (settings.countdownEnabled) {
-      get().startCountdown();
-    }
+    if (settings.countdownEnabled) get().startCountdown();
   },
 
   clearCountdown: () => {
@@ -186,10 +145,9 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
 
     get().stopAIvsAI();
     get().clearCountdown();
+    clearAutoSave();
 
-    if (settings.soundEnabled) {
-      playBgMusic(settings.theme);
-    }
+    if (settings.soundEnabled) playBgMusic(settings.theme);
 
     set({
       piles:         initPiles,
@@ -207,12 +165,46 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       countdownLeft: settings.countdownSeconds,
     });
 
-    deleteSavedGame();
-
-    // Bắt đầu countdown nếu bật và không phải AI vs AI
     if (settings.countdownEnabled && settings.gameMode !== 'aivai') {
       setTimeout(() => get().startCountdown(), 100);
     }
+  },
+
+  // ── Tiếp tục ván dang dở ───────────────────
+  continueGame: () => {
+    const saved = loadAutoSave();
+    if (!saved) return false;
+
+    if (saved.settings?.theme) applyTheme(saved.settings.theme);
+
+    get().clearCountdown();
+    get().stopAIvsAI();
+
+    if (saved.settings?.soundEnabled) {
+      playBgMusic(saved.settings?.theme || 'default');
+    }
+
+    set({
+      piles:         saved.piles,
+      initialPiles:  saved.initialPiles || saved.piles,
+      currentPlayer: saved.currentPlayer,
+      moveHistory:   saved.moveHistory  || [],
+      settings:      { ...get().settings, ...saved.settings },
+      gamePhase:     'playing',
+      winner:        null,
+      nimSum:        calcNimSum(saved.piles),
+      turnCount:     saved.turnCount     || 0,
+      gameStartTime: saved.gameStartTime || Date.now(),
+      countdownLeft: saved.settings?.countdownSeconds || 15,
+      isAIvsAI:      saved.settings?.gameMode === 'aivai',
+    });
+
+    // Bắt đầu countdown nếu có
+    if (saved.settings?.countdownEnabled && saved.settings?.gameMode !== 'aivai') {
+      setTimeout(() => get().startCountdown(), 100);
+    }
+
+    return true;
   },
 
   // ── Sinh piles ngẫu nhiên ──────────────────
@@ -249,7 +241,6 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       },
     ];
 
-    // Kiểm tra kết thúc
     if (isGameOver(newPiles)) {
       let winner;
       if (settings.misereVariant) {
@@ -260,6 +251,7 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
 
       get().stopAIvsAI();
       get().clearCountdown();
+      clearAutoSave();
       stopBgMusic();
 
       if (settings.soundEnabled) {
@@ -271,12 +263,18 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
         }
       }
 
+      // Lưu vào lịch sử ván đã hoàn thành
       saveToHistory({
         winner,
-        mode:       settings.gameMode,
-        difficulty: settings.aiDifficulty,
-        turns:      turnCount + 1,
-        duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
+        mode:         settings.gameMode,
+        difficulty:   settings.aiDifficulty,
+        turns:        turnCount + 1,
+        duration:     Math.round((Date.now() - get().gameStartTime) / 1000),
+        initialPiles: get().initialPiles,
+        playerNames:  settings.playerNames,
+        aiName:       settings.aiName,
+        misere:       settings.misereVariant,
+        endReason:    'normal',
       });
 
       set({
@@ -290,8 +288,8 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       return true;
     }
 
-    // Chuyển lượt
     const nextPlayer = currentPlayer === 0 ? 1 : 0;
+
     set({
       piles:         newPiles,
       currentPlayer: nextPlayer,
@@ -301,12 +299,22 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       countdownLeft: settings.countdownSeconds,
     });
 
-    // Reset countdown
+    // Tự động lưu sau mỗi nước đi
+    const newState = get();
+    autoSaveGame({
+      piles:         newPiles,
+      initialPiles:  newState.initialPiles,
+      currentPlayer: nextPlayer,
+      moveHistory:   newHistory,
+      settings,
+      turnCount:     turnCount + 1,
+      gameStartTime: newState.gameStartTime,
+    });
+
     if (settings.countdownEnabled && settings.gameMode !== 'aivai') {
       get().resetCountdown();
     }
 
-    // Nếu PvC và đến lượt AI
     if (settings.gameMode === 'pvc' && nextPlayer === 1) {
       setTimeout(() => get().triggerAIMove(), 800);
     }
@@ -314,13 +322,12 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
     return true;
   },
 
-  // ── AI tự động đi (PvC) ────────────────────
+  // ── AI tự động đi ──────────────────────────
   triggerAIMove: () => {
     const { piles, settings, gamePhase } = get();
     if (gamePhase !== 'playing') return;
 
     set({ isAIThinking: true });
-
     if (settings.soundEnabled) sounds.aiThink();
 
     setTimeout(() => {
@@ -334,7 +341,7 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
     }, 600);
   },
 
-  // ── AI vs AI: đi một bước ──────────────────
+  // ── AI vs AI ───────────────────────────────
   stepAIvsAI: () => {
     const { piles, currentPlayer, settings, gamePhase } = get();
     if (gamePhase !== 'playing') return;
@@ -344,7 +351,6 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       : settings.ai2Difficulty;
 
     set({ isAIThinking: true });
-
     const move = calcAIMove(piles, difficulty);
     if (move) {
       if (settings.soundEnabled) sounds.pick();
@@ -355,7 +361,6 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
     }
   },
 
-  // ── AI vs AI: bắt đầu tự chạy ─────────────
   startAIvsAI: () => {
     const { aivsaiSpeed, gamePhase } = get();
     if (gamePhase !== 'playing') return;
@@ -375,21 +380,18 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
     set({ aivsaiRunning: true, aivsaiInterval: interval });
   },
 
-  // ── AI vs AI: tạm dừng ─────────────────────
   pauseAIvsAI: () => {
     const { aivsaiInterval } = get();
     if (aivsaiInterval) clearInterval(aivsaiInterval);
     set({ aivsaiRunning: false, aivsaiInterval: null });
   },
 
-  // ── AI vs AI: dừng hẳn ─────────────────────
   stopAIvsAI: () => {
     const { aivsaiInterval } = get();
     if (aivsaiInterval) clearInterval(aivsaiInterval);
     set({ aivsaiRunning: false, aivsaiInterval: null });
   },
 
-  // ── AI vs AI: đổi tốc độ ──────────────────
   setAIvsAISpeed: (speed) => {
     const { aivsaiRunning } = get();
     set({ aivsaiSpeed: speed });
@@ -407,10 +409,8 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
 
     const newHistory     = moveHistory.slice(0, -stepsBack);
     const prevMove       = newHistory[newHistory.length - 1];
-    const restoredPiles  = prevMove ? prevMove.pilesAfter : [3, 5, 7];
-    const restoredPlayer = prevMove
-      ? (prevMove.player === 0 ? 1 : 0)
-      : 0;
+    const restoredPiles  = prevMove ? prevMove.pilesAfter : get().initialPiles;
+    const restoredPlayer = prevMove ? (prevMove.player === 0 ? 1 : 0) : 0;
 
     get().resetCountdown();
 
@@ -422,42 +422,6 @@ set({ gamePhase: 'gameover', winner, nimSum: 0 });
       winner:        null,
       nimSum:        calcNimSum(restoredPiles),
     });
-  },
-
-  // ── Lưu game ───────────────────────────────
-  saveCurrentGame: () => {
-    const {
-      piles, currentPlayer, moveHistory,
-      settings, turnCount, gameStartTime, initialPiles,
-    } = get();
-    return saveGame({
-      piles, currentPlayer, moveHistory,
-      settings, turnCount, gameStartTime, initialPiles,
-    });
-  },
-
-  // ── Tải game đã lưu ────────────────────────
-  loadSavedGame: () => {
-    const saved = loadGame();
-    if (!saved) return false;
-
-    if (saved.settings?.theme) {
-      applyTheme(saved.settings.theme);
-    }
-
-    set({
-      piles:         saved.piles,
-      initialPiles:  saved.initialPiles || saved.piles,
-      currentPlayer: saved.currentPlayer,
-      moveHistory:   saved.moveHistory || [],
-      settings:      { ...get().settings, ...saved.settings },
-      gamePhase:     'playing',
-      winner:        null,
-      nimSum:        calcNimSum(saved.piles),
-      turnCount:     saved.turnCount     || 0,
-      gameStartTime: saved.gameStartTime || Date.now(),
-    });
-    return true;
   },
 
   // ── Điều hướng ─────────────────────────────

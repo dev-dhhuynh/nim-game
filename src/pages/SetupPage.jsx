@@ -2,27 +2,32 @@
 // SETUP PAGE — Màn hình cấu hình trước khi chơi
 // =============================================
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { PRESETS, generateRandomPiles } from '../utils/nimLogic';
 import ThemeSelector from '../components/ThemeSelector';
+import HistoryModal from '../components/HistoryModal';
 import styles from './SetupPage.module.css';
 
 const SetupPage = () => {
-  const { settings, updateSettings, startGame, goToMenu } = useGameStore();
+  const {
+    settings, updateSettings,
+    startGame, goToMenu,
+  } = useGameStore();
 
-  const [localPiles,    setLocalPiles]    = useState([3, 5, 7]);
-  const [playerNames,   setPlayerNames]   = useState([...settings.playerNames]);
-  const [aiName,        setAiName]        = useState(settings.aiName);
-  const [ai1Name,       setAi1Name]       = useState(settings.ai1Name);
-  const [ai2Name,       setAi2Name]       = useState(settings.ai2Name);
-  const [mode,          setMode]          = useState(settings.gameMode);
-  const [difficulty,    setDifficulty]    = useState(settings.aiDifficulty);
-  const [ai1Diff,       setAi1Diff]       = useState(settings.ai1Difficulty);
-  const [ai2Diff,       setAi2Diff]       = useState(settings.ai2Difficulty);
-  const [misere,        setMisere]        = useState(settings.misereVariant);
-  const [countdown,     setCountdown]     = useState(settings.countdownEnabled);
-  const [countdownSecs, setCountdownSecs] = useState(settings.countdownSeconds);
+  const [localPiles,       setLocalPiles]       = useState([3, 5, 7]);
+  const [playerNames,      setPlayerNames]      = useState([...settings.playerNames]);
+  const [aiName,           setAiName]           = useState(settings.aiName);
+  const [ai1Name,          setAi1Name]          = useState(settings.ai1Name);
+  const [ai2Name,          setAi2Name]          = useState(settings.ai2Name);
+  const [mode,             setMode]             = useState(settings.gameMode);
+  const [difficulty,       setDifficulty]       = useState(settings.aiDifficulty);
+  const [ai1Diff,          setAi1Diff]          = useState(settings.ai1Difficulty);
+  const [ai2Diff,          setAi2Diff]          = useState(settings.ai2Difficulty);
+  const [misere,           setMisere]           = useState(settings.misereVariant);
+  const [countdown,        setCountdown]        = useState(settings.countdownEnabled);
+  const [countdownSecs,    setCountdownSecs]    = useState(settings.countdownSeconds);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const handleRandomize = () => {
     setLocalPiles(generateRandomPiles(3, 5, 10));
@@ -66,6 +71,20 @@ const SetupPage = () => {
     startGame(localPiles);
   };
 
+  // Chơi lại từ lịch sử
+  const handleReplay = (historyItem) => {
+    if (historyItem.initialPiles) {
+      updateSettings({
+        gameMode:      historyItem.mode       || 'pvp',
+        aiDifficulty:  historyItem.difficulty  || 'hard',
+        misereVariant: historyItem.misere      || false,
+        playerNames:   historyItem.playerNames || ['Người Chơi 1', 'Người Chơi 2'],
+        aiName:        historyItem.aiName      || 'NIM-Bot',
+      });
+      startGame(historyItem.initialPiles);
+    }
+  };
+
   const DifficultyPicker = ({ value, onChange }) => (
     <div className={styles.diffBtns}>
       {[
@@ -104,10 +123,19 @@ const SetupPage = () => {
             ← Quay lại
           </button>
           <h2 className={styles.title}>THIẾT LẬP GAME</h2>
-          <ThemeSelector
-            currentTheme={settings.theme}
-            onChange={(themeKey) => updateSettings({ theme: themeKey })}
-          />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              className='btn btn-ghost'
+              style={{ padding: '6px 12px', fontSize: '0.7rem' }}
+              onClick={() => setShowHistoryModal(true)}
+            >
+              📁 Lịch Sử Đấu
+            </button>
+            <ThemeSelector
+              currentTheme={settings.theme}
+              onChange={(themeKey) => updateSettings({ theme: themeKey })}
+            />
+          </div>
         </div>
 
         <div className={styles.grid}>
@@ -115,7 +143,6 @@ const SetupPage = () => {
           {/* ── CỘT TRÁI ── */}
           <div className={styles.section}>
 
-            {/* Chế độ chơi */}
             <p className={styles.sectionTitle}>⚔ CHẾ ĐỘ CHƠI</p>
             <div className={styles.modeButtons}>
               <button
@@ -141,7 +168,6 @@ const SetupPage = () => {
               </button>
             </div>
 
-            {/* Cấu hình theo chế độ */}
             <motion.div
               key={mode}
               initial={{ opacity: 0, y: -8 }}
@@ -272,7 +298,7 @@ const SetupPage = () => {
               )}
             </motion.div>
 
-            {/* Biến thể Misère */}
+            {/* Misère */}
             <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
               🔀 BIẾN THỂ
             </p>
@@ -365,7 +391,6 @@ const SetupPage = () => {
                   transition={{ delay: i * 0.05 }}
                 >
                   <span className={styles.pileLabel}>Hàng {i + 1}</span>
-
                   <div className={styles.pileControl}>
                     <button
                       className={styles.pileBtn}
@@ -383,7 +408,6 @@ const SetupPage = () => {
                       onClick={() => changePile(i, count + 1)}
                     >+</button>
                   </div>
-
                   <div className={styles.stonePreview}>
                     {[...Array(Math.min(count, 10))].map((_, j) => (
                       <span key={j} className={styles.stoneDot}>◆</span>
@@ -392,7 +416,6 @@ const SetupPage = () => {
                       <span className={styles.moreStones}>+{count - 10}</span>
                     )}
                   </div>
-
                   <button
                     className={styles.removeBtn}
                     onClick={() => removePile(i)}
@@ -425,6 +448,18 @@ const SetupPage = () => {
         </div>
 
       </motion.div>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <HistoryModal
+            isOpen={showHistoryModal}
+            onReplay={handleReplay}
+            onClose={() => setShowHistoryModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

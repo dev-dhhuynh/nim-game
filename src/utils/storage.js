@@ -2,81 +2,51 @@
 // LOCAL STORAGE — Lưu & Tải trạng thái game
 // =============================================
 
-const SAVE_SLOTS_KEY = 'nim_save_slots';   // nhiều slot
-const HISTORY_KEY    = 'nim_game_history';
+const AUTO_SAVE_KEY  = 'nim_auto_save';    // ván dang dở
+const HISTORY_KEY    = 'nim_game_history'; // lịch sử ván đã chơi
 const SETTINGS_KEY   = 'nim_settings';
 
 // ---------------------------------------------
-// SAVE SLOTS — Lưu nhiều ván
+// AUTO SAVE — Ván dang dở (tự động)
 // ---------------------------------------------
 
-// Lấy toàn bộ slots (mảng 3 phần tử)
-export const getSaveSlots = () => {
+// Lưu tự động ván đang chơi
+export const autoSaveGame = (gameState) => {
   try {
-    const raw = localStorage.getItem(SAVE_SLOTS_KEY);
-    if (!raw) return [null, null, null];
-    const slots = JSON.parse(raw);
-    // Đảm bảo luôn có đúng 3 slot
-    while (slots.length < 3) slots.push(null);
-    return slots.slice(0, 3);
-  } catch {
-    return [null, null, null];
-  }
-};
-
-// Lưu vào một slot cụ thể (0, 1, 2)
-export const saveToSlot = (slotIndex, gameState, slotName = '') => {
-  try {
-    const slots = getSaveSlots();
-    slots[slotIndex] = {
+    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
       ...gameState,
-      slotName: slotName || `Ván ${slotIndex + 1}`,
-      savedAt:  new Date().toISOString(),
-    };
-    localStorage.setItem(SAVE_SLOTS_KEY, JSON.stringify(slots));
-    return true;
+      savedAt: new Date().toISOString(),
+    }));
   } catch (e) {
-    console.error('Lưu slot thất bại:', e);
-    return false;
+    console.error('Auto save thất bại:', e);
   }
 };
 
-// Tải từ một slot
-export const loadFromSlot = (slotIndex) => {
+// Tải ván dang dở
+export const loadAutoSave = () => {
   try {
-    const slots = getSaveSlots();
-    return slots[slotIndex] || null;
+    const raw = localStorage.getItem(AUTO_SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 };
 
-// Xóa một slot
-export const deleteSlot = (slotIndex) => {
-  try {
-    const slots = getSaveSlots();
-    slots[slotIndex] = null;
-    localStorage.setItem(SAVE_SLOTS_KEY, JSON.stringify(slots));
-    return true;
-  } catch {
-    return false;
-  }
+// Xóa ván dang dở (khi game kết thúc)
+export const clearAutoSave = () => {
+  localStorage.removeItem(AUTO_SAVE_KEY);
 };
 
-// Kiểm tra có slot nào đã lưu không
-export const hasSavedGame = () => {
-  const slots = getSaveSlots();
-  return slots.some((s) => s !== null);
+// Kiểm tra có ván dang dở không
+export const hasAutoSave = () => {
+  return localStorage.getItem(AUTO_SAVE_KEY) !== null;
 };
 
-// Giữ lại các hàm cũ để tương thích
-export const saveGame = (gameState) => saveToSlot(0, gameState);
-export const loadGame = () => loadFromSlot(0);
-export const deleteSavedGame = () => deleteSlot(0);
+// ---------------------------------------------
+// HISTORY — Lịch sử ván đã hoàn thành
+// ---------------------------------------------
 
-// ---------------------------------------------
-// LỊCH SỬ VÁN ĐÃ CHƠI
-// ---------------------------------------------
+// Lưu ván vừa kết thúc vào lịch sử
 export const saveToHistory = (result) => {
   try {
     const history = getHistory();
@@ -87,13 +57,14 @@ export const saveToHistory = (result) => {
     });
     localStorage.setItem(
       HISTORY_KEY,
-      JSON.stringify(history.slice(0, 50))
+      JSON.stringify(history.slice(0, 20))
     );
   } catch (e) {
     console.error('Lưu lịch sử thất bại:', e);
   }
 };
 
+// Lấy toàn bộ lịch sử
 export const getHistory = () => {
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
@@ -103,8 +74,17 @@ export const getHistory = () => {
   }
 };
 
+// Xóa toàn bộ lịch sử
 export const clearHistory = () => {
   localStorage.removeItem(HISTORY_KEY);
+};
+
+// Xóa một ván trong lịch sử theo id
+export const deleteHistoryById = (id) => {
+  try {
+    const history = getHistory().filter((h) => h.id !== id);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch {}
 };
 
 // ---------------------------------------------
@@ -113,7 +93,7 @@ export const clearHistory = () => {
 export const saveSettings = (settings) => {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch (e) {}
+  } catch {}
 };
 
 export const loadSettings = () => {
@@ -124,3 +104,9 @@ export const loadSettings = () => {
     return null;
   }
 };
+
+// Giữ lại để tương thích
+export const hasSavedGame  = hasAutoSave;
+export const saveGame      = autoSaveGame;
+export const loadGame      = loadAutoSave;
+export const deleteSavedGame = clearAutoSave;

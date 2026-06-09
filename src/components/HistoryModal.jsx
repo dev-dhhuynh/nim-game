@@ -1,6 +1,6 @@
-// =============================================
-// HISTORY MODAL — Lịch sử các ván đã chơi
-// =============================================
+
+// Lịch sử đấu
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getHistory, clearHistory, deleteHistoryById } from '../utils/storage';

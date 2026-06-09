@@ -1,12 +1,12 @@
-// =============================================
-// SETUP PAGE — Màn hình cấu hình trước khi chơi
-// =============================================
+// Thiết lập game
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { PRESETS, generateRandomPiles } from '../utils/nimLogic';
 import ThemeSelector from '../components/ThemeSelector';
 import HistoryModal from '../components/HistoryModal';
+import SoundSettings from '../components/SoundSettings';
 import styles from './SetupPage.module.css';
 
 const SetupPage = () => {
@@ -29,22 +29,17 @@ const SetupPage = () => {
   const [countdownSecs,    setCountdownSecs]    = useState(settings.countdownSeconds);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  const handleRandomize = () => {
-    setLocalPiles(generateRandomPiles(3, 5, 10));
-  };
+  const handleRandomize = () => setLocalPiles(generateRandomPiles(3, 5, 10));
 
-  const handlePreset = (key) => {
-    setLocalPiles([...PRESETS[key].piles]);
-  };
+  const handlePreset = (key) => setLocalPiles([...PRESETS[key].piles]);
 
   const addPile = () => {
     if (localPiles.length < 6) setLocalPiles([...localPiles, 3]);
   };
 
   const removePile = (i) => {
-    if (localPiles.length > 2) {
+    if (localPiles.length > 2)
       setLocalPiles(localPiles.filter((_, idx) => idx !== i));
-    }
   };
 
   const changePile = (i, val) => {
@@ -71,7 +66,6 @@ const SetupPage = () => {
     startGame(localPiles);
   };
 
-  // Chơi lại từ lịch sử
   const handleReplay = (historyItem) => {
     if (historyItem.initialPiles) {
       updateSettings({
@@ -138,6 +132,7 @@ const SetupPage = () => {
           </div>
         </div>
 
+        {/* Grid 2 cột */}
         <div className={styles.grid}>
 
           {/* ── CỘT TRÁI ── */}
@@ -149,22 +144,19 @@ const SetupPage = () => {
                 className={`${styles.modeBtn} ${mode === 'pvp' ? styles.modeActive : ''}`}
                 onClick={() => setMode('pvp')}
               >
-                <span>👥</span>
-                <span>Người vs Người</span>
+                <span>👥</span><span>Người vs Người</span>
               </button>
               <button
                 className={`${styles.modeBtn} ${mode === 'pvc' ? styles.modeActive : ''}`}
                 onClick={() => setMode('pvc')}
               >
-                <span>🤖</span>
-                <span>Người vs Máy</span>
+                <span>🤖</span><span>Người vs Máy</span>
               </button>
               <button
                 className={`${styles.modeBtn} ${mode === 'aivai' ? styles.modeActive : ''}`}
                 onClick={() => setMode('aivai')}
               >
-                <span>🤖🤖</span>
-                <span>Máy vs Máy</span>
+                <span>🤖🤖</span><span>Máy vs Máy</span>
               </button>
             </div>
 
@@ -174,7 +166,6 @@ const SetupPage = () => {
               animate={{ opacity: 1,  y:  0 }}
               transition={{ duration: 0.2 }}
             >
-              {/* PvP */}
               {mode === 'pvp' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
@@ -184,32 +175,21 @@ const SetupPage = () => {
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-primary)' }}>P1</span>
-                      <input
-                        className={styles.input}
-                        value={playerNames[0]}
+                      <input className={styles.input} value={playerNames[0]}
                         maxLength={16}
-                        onChange={(e) =>
-                          setPlayerNames([e.target.value, playerNames[1]])
-                        }
-                      />
+                        onChange={(e) => setPlayerNames([e.target.value, playerNames[1]])} />
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-gold)' }}>P2</span>
-                      <input
-                        className={styles.input}
-                        value={playerNames[1]}
+                      <input className={styles.input} value={playerNames[1]}
                         maxLength={16}
-                        onChange={(e) =>
-                          setPlayerNames([playerNames[0], e.target.value])
-                        }
-                      />
+                        onChange={(e) => setPlayerNames([playerNames[0], e.target.value])} />
                     </div>
                   </div>
                 </>
               )}
 
-              {/* PvC */}
               {mode === 'pvc' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
@@ -219,37 +199,25 @@ const SetupPage = () => {
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-primary)' }}>Bạn</span>
-                      <input
-                        className={styles.input}
-                        value={playerNames[0]}
+                      <input className={styles.input} value={playerNames[0]}
                         maxLength={16}
-                        onChange={(e) =>
-                          setPlayerNames([e.target.value, playerNames[1]])
-                        }
-                      />
+                        onChange={(e) => setPlayerNames([e.target.value, playerNames[1]])} />
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-red)' }}>AI</span>
-                      <input
-                        className={styles.input}
-                        value={aiName}
+                      <input className={styles.input} value={aiName}
                         maxLength={16}
-                        onChange={(e) => setAiName(e.target.value)}
-                      />
+                        onChange={(e) => setAiName(e.target.value)} />
                     </div>
                   </div>
                   <p className={styles.sectionTitle} style={{ marginTop: 14 }}>
                     🧠 ĐỘ KHÓ AI
                   </p>
-                  <DifficultyPicker
-                    value={difficulty}
-                    onChange={setDifficulty}
-                  />
+                  <DifficultyPicker value={difficulty} onChange={setDifficulty} />
                 </>
               )}
 
-              {/* AI vs AI */}
               {mode === 'aivai' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
@@ -262,19 +230,12 @@ const SetupPage = () => {
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-primary)' }}>Tên</span>
-                      <input
-                        className={styles.input}
-                        value={ai1Name}
-                        maxLength={16}
-                        onChange={(e) => setAi1Name(e.target.value)}
-                      />
+                      <input className={styles.input} value={ai1Name}
+                        maxLength={16} onChange={(e) => setAi1Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>
-                      Độ khó
-                    </p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>Độ khó</p>
                     <DifficultyPicker value={ai1Diff} onChange={setAi1Diff} />
                   </div>
-
                   <div className={styles.botCard} style={{ marginTop: 10 }}>
                     <div className={styles.botHeader}>
                       <span style={{ color: 'var(--accent-gold)' }}>◆ Bot 2</span>
@@ -282,16 +243,10 @@ const SetupPage = () => {
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
                         style={{ color: 'var(--accent-gold)' }}>Tên</span>
-                      <input
-                        className={styles.input}
-                        value={ai2Name}
-                        maxLength={16}
-                        onChange={(e) => setAi2Name(e.target.value)}
-                      />
+                      <input className={styles.input} value={ai2Name}
+                        maxLength={16} onChange={(e) => setAi2Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>
-                      Độ khó
-                    </p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>Độ khó</p>
                     <DifficultyPicker value={ai2Diff} onChange={setAi2Diff} />
                   </div>
                 </>
@@ -303,11 +258,8 @@ const SetupPage = () => {
               🔀 BIẾN THỂ
             </p>
             <label className={styles.toggle}>
-              <input
-                type='checkbox'
-                checked={misere}
-                onChange={(e) => setMisere(e.target.checked)}
-              />
+              <input type='checkbox' checked={misere}
+                onChange={(e) => setMisere(e.target.checked)} />
               <span className={styles.toggleSlider} />
               <span>Misère — người lấy que cuối <strong>thua</strong></span>
             </label>
@@ -317,12 +269,9 @@ const SetupPage = () => {
               ⏱ ĐẾM NGƯỢC
             </p>
             <label className={styles.toggle}>
-              <input
-                type='checkbox'
-                checked={countdown}
+              <input type='checkbox' checked={countdown}
                 onChange={(e) => setCountdown(e.target.checked)}
-                disabled={mode === 'aivai'}
-              />
+                disabled={mode === 'aivai'} />
               <span className={styles.toggleSlider} />
               <span>
                 Giới hạn thời gian mỗi lượt
@@ -355,6 +304,11 @@ const SetupPage = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* Cài đặt âm thanh */}
+            <div style={{ marginTop: 16 }}>
+              <SoundSettings mode='panel' />
+            </div>
 
           </div>
 
@@ -392,21 +346,13 @@ const SetupPage = () => {
                 >
                   <span className={styles.pileLabel}>Hàng {i + 1}</span>
                   <div className={styles.pileControl}>
-                    <button
-                      className={styles.pileBtn}
-                      onClick={() => changePile(i, count - 1)}
-                    >−</button>
-                    <input
-                      type='number'
-                      className={styles.pileInput}
-                      value={count}
-                      min={1} max={15}
-                      onChange={(e) => changePile(i, e.target.value)}
-                    />
-                    <button
-                      className={styles.pileBtn}
-                      onClick={() => changePile(i, count + 1)}
-                    >+</button>
+                    <button className={styles.pileBtn}
+                      onClick={() => changePile(i, count - 1)}>−</button>
+                    <input type='number' className={styles.pileInput}
+                      value={count} min={1} max={15}
+                      onChange={(e) => changePile(i, e.target.value)} />
+                    <button className={styles.pileBtn}
+                      onClick={() => changePile(i, count + 1)}>+</button>
                   </div>
                   <div className={styles.stonePreview}>
                     {[...Array(Math.min(count, 10))].map((_, j) => (
@@ -416,11 +362,9 @@ const SetupPage = () => {
                       <span className={styles.moreStones}>+{count - 10}</span>
                     )}
                   </div>
-                  <button
-                    className={styles.removeBtn}
+                  <button className={styles.removeBtn}
                     onClick={() => removePile(i)}
-                    disabled={localPiles.length <= 2}
-                  >✕</button>
+                    disabled={localPiles.length <= 2}>✕</button>
                 </motion.div>
               ))}
             </div>

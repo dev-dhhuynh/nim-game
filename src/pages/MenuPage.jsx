@@ -1,6 +1,5 @@
-// =============================================
-// MENU PAGE — Màn hình chính
-// =============================================
+// Màn hình chính
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';

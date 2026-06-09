@@ -1,0 +1,219 @@
+/* ── Panel mode (trong Setup) ── */
+.panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.panelTitle {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* ── Popup mode (trong Game) ── */
+.popupWrapper {
+    position: relative;
+}
+
+.popupTrigger {
+    padding: 5px 10px !important;
+    font-size: 0.85rem !important;
+}
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+}
+
+.popup {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #16161f;
+    border: 1px solid #35354a;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    width: 280px;
+    z-index: 50;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.popupHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.popupTitle {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--accent-primary);
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.closeBtn:hover {
+    color: var(--accent-red);
+}
+
+/* ── Nội dung chung ── */
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Một dòng cài đặt */
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rowLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.rowIcon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.rowLabel {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.rowDesc {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Sub section — bị mờ khi tắt master */
+.subSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 8px;
+    border-left: 2px solid var(--border);
+    transition: var(--transition);
+}
+
+.subSection.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Thanh âm lượng */
+.volumeRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+}
+
+.volLabel {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+}
+
+.slider:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.volValue {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--accent-primary);
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Toggle */
+.toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.toggle input {
+    display: none;
+}
+
+.toggleSlider {
+    width: 38px;
+    height: 21px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    position: relative;
+    transition: var(--transition);
+}
+
+.toggleSlider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 13px;
+    height: 13px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.toggle input:checked+.toggleSlider {
+    background: rgba(0, 245, 196, 0.2);
+    border-color: var(--accent-primary);
+}
+
+.toggle input:checked+.toggleSlider::after {
+    left: 20px;
+    background: var(--accent-primary);
+}
+
+.toggle input:disabled+.toggleSlider {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

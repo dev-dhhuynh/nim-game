@@ -1,13 +1,12 @@
-// =============================================
-// AI VS AI CONTROLS — Điều khiển chế độ máy tự chơi
-// =============================================
+// AI vs AI
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import styles from './AIvsAIControls.module.css';
 
 const AIvsAIControls = ({
   isRunning,    // đang chạy tự động không
-  speed,        // tốc độ: 'slow' | 'normal' | 'fast'
+  speed,        // tốc độ AI
   onStart,      // bắt đầu tự chơi
   onPause,      // tạm dừng
   onStep,       // đi từng bước một

@@ -1,8 +1,5 @@
-// =============================================
-// THEMES — Định nghĩa toàn bộ chủ đề game
-// =============================================
+// Chủ đề game
 
-// Import ảnh nền — đuôi .gif
 import bgDefault   from '../assets/images/default.gif';
 import bgChristmas from '../assets/images/christmas.jpg';
 import bgHalloween from '../assets/images/halloween.gif';
@@ -10,7 +7,7 @@ import bgSummer    from '../assets/images/summer.gif';
 
 export const THEMES = {
 
-  // ── Mặc định ─────────────────────────────
+  // Mặc định
   default: {
     key:     'default',
     label:   '🎮 Mặc định',
@@ -33,7 +30,7 @@ export const THEMES = {
     },
   },
 
-  // ── Giáng Sinh ────────────────────────────
+  // Giáng Sinh
   christmas: {
     key:     'christmas',
     label:   '🎄 Giáng Sinh',
@@ -56,7 +53,7 @@ export const THEMES = {
     },
   },
 
-  // ── Halloween ─────────────────────────────
+  // Halloween
 halloween: {
   key:     'halloween',
   label:   '🎃 Halloween',
@@ -65,20 +62,20 @@ halloween: {
   bgImage: bgHalloween,
 
   colors: {
-    '--bg-primary':    '#0d0d14',   /* giữ tối trung tính như default */
-    '--bg-secondary':  '#1a1a26',   /* giữ tối trung tính như default */
-    '--bg-card':       '#21212f',   /* giữ tối trung tính như default */
-    '--accent-primary':'#ff6a00',   /* cam bí ngô — chỉ dùng cho accent */
+    '--bg-primary':    '#0d0d14',  
+    '--bg-secondary':  '#1a1a26',   
+    '--bg-card':       '#21212f',   
+    '--accent-primary':'#ff6a00',   
     '--accent-gold':   '#ffaa00',
     '--accent-red':    '#ff3300',
-    '--border':        '#35354a',   /* giữ viền như default */
-    '--text-primary':  '#fff0e0',   /* vàng ấm nhẹ */
+    '--border':        '#35354a',  
+    '--text-primary':  '#fff0e0',   
     '--text-secondary':'#c8a870',
     '--text-muted':    '#806040',
   },
 },
 
-  // ── Mùa Hè ───────────────────────────────
+  // Mùa Hè
   summer: {
     key:     'summer',
     label:   '☀️ Mùa Hè',
@@ -102,9 +99,9 @@ halloween: {
   },
 };
 
-// ---------------------------------------------
+
 // Áp dụng theme vào CSS variables
-// ---------------------------------------------
+
 export const applyTheme = (themeKey) => {
   const theme = THEMES[themeKey] || THEMES.default;
   const root  = document.documentElement;
@@ -114,9 +111,9 @@ export const applyTheme = (themeKey) => {
   });
 };
 
-// ---------------------------------------------
+
 // Lấy thông tin một theme
-// ---------------------------------------------
+
 export const getTheme = (themeKey) => {
   return THEMES[themeKey] || THEMES.default;
 };

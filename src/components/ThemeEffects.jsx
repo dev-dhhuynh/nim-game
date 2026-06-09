@@ -1,18 +1,16 @@
-// =============================================
-// THEME EFFECTS — Hiệu ứng theo chủ đề
-// =============================================
-// Dòng mới — bỏ useEffect và useRef
+// Hiệu ứng theo chủ đề
+
 import React from 'react';
 import styles from './ThemeEffects.module.css';
 
-// ── Số lượng phần tử ──
+// Số lượng phần tử
 const COUNTS = {
   default:   30,  // hạt tinh tú
   halloween: 8,   // con quạ
   summer:    20,  // bong bóng
 };
 
-// ── Tạo dữ liệu ngẫu nhiên ──
+// Tạo dữ liệu ngẫu nhiên
 const createParticles = (theme) => {
   const count = COUNTS[theme] || 0;
 
@@ -28,7 +26,7 @@ const createParticles = (theme) => {
   }));
 };
 
-// ── Default: Hạt tinh tú ──
+// Default
 const StarParticles = () => {
   const particles = createParticles('default');
 
@@ -53,7 +51,7 @@ const StarParticles = () => {
   );
 };
 
-// ── Halloween: Con quạ ──
+// Halloween
 const CrowParticles = () => {
   const particles = createParticles('halloween');
 
@@ -77,7 +75,7 @@ const CrowParticles = () => {
   );
 };
 
-// ── Summer: Bong bóng ──
+// Summer
 const BubbleParticles = () => {
   const particles = createParticles('summer');
 
@@ -102,7 +100,7 @@ const BubbleParticles = () => {
   );
 };
 
-// ── Component chính ──
+// Component chính
 const ThemeEffects = ({ theme }) => {
   if (theme === 'default')   return <StarParticles />;
   if (theme === 'halloween') return <CrowParticles />;

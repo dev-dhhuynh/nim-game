@@ -1,6 +1,5 @@
-// =============================================
-// THEME SELECTOR — Bộ chọn chủ đề game
-// =============================================
+// Giao diện chọn chủ đề
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THEMES } from '../utils/themes';

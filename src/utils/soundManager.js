@@ -1,8 +1,5 @@
-// =============================================
-// SOUND MANAGER — Quản lý âm thanh game
-// =============================================
+// Quản lý âm thanh game
 
-// Import file nhạc nền
 import bgDefault   from '../assets/sounds/default.mp3';
 import bgChristmas from '../assets/sounds/christmas.mp3';
 import bgHalloween from '../assets/sounds/halloween.mp3';
@@ -15,7 +12,7 @@ const MUSIC_MAP = {
   summer:    bgSummer,
 };
 
-// ── AudioContext cho sound effects ──
+// ── AudioContext ──
 let audioCtx = null;
 
 const getCtx = () => {
@@ -25,7 +22,30 @@ const getCtx = () => {
   return audioCtx;
 };
 
+// ── Cài đặt âm thanh ──
+let soundConfig = {
+  masterEnabled: true,   // bật/tắt tất cả
+  musicEnabled:  true,   // nhạc nền
+  sfxEnabled:    true,   // hiệu ứng âm thanh
+  musicVolume:   0.35,   // âm lượng nhạc 0-1
+  sfxVolume:     0.5,    // âm lượng hiệu ứng 0-1
+};
+
+export const getSoundConfig  = () => ({ ...soundConfig });
+
+export const updateSoundConfig = (partial) => {
+  soundConfig = { ...soundConfig, ...partial };
+  // Cập nhật âm lượng nhạc nền ngay lập tức
+  if (bgAudio) {
+    bgAudio.volume = soundConfig.masterEnabled && soundConfig.musicEnabled
+      ? soundConfig.musicVolume
+      : 0;
+  }
+};
+
+// ── Tạo âm thanh ──
 const playTone = (frequency, type, duration, volume = 0.3, delay = 0) => {
+  if (!soundConfig.masterEnabled || !soundConfig.sfxEnabled) return;
   try {
     const ctx        = getCtx();
     const oscillator = ctx.createOscillator();
@@ -37,8 +57,9 @@ const playTone = (frequency, type, duration, volume = 0.3, delay = 0) => {
     oscillator.type            = type;
     oscillator.frequency.value = frequency;
 
+    const v         = volume * soundConfig.sfxVolume;
     const startTime = ctx.currentTime + delay;
-    gainNode.gain.setValueAtTime(volume, startTime);
+    gainNode.gain.setValueAtTime(v, startTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
 
     oscillator.start(startTime);
@@ -86,22 +107,21 @@ export const playUndoSound = () => {
   playTone(300, 'triangle', 0.1, 0.15, 0.08);
 };
 
-// ── Nhạc nền dùng file MP3 thật ──
+// ── Nhạc nền ──
 let bgAudio = null;
 
 export const playBgMusic = (theme = 'default') => {
   stopBgMusic();
+  if (!soundConfig.masterEnabled || !soundConfig.musicEnabled) return;
 
   const src = MUSIC_MAP[theme];
   if (!src) return;
 
   try {
-    bgAudio = new Audio(src);
-    bgAudio.loop   = true;     // lặp vô tận
-    bgAudio.volume = 0.35;     // âm lượng 35%
-    bgAudio.play().catch((e) => {
-      console.warn('Nhạc nền không phát được:', e);
-    });
+    bgAudio        = new Audio(src);
+    bgAudio.loop   = true;
+    bgAudio.volume = soundConfig.musicVolume;
+    bgAudio.play().catch((e) => console.warn('Nhạc nền lỗi:', e));
   } catch (e) {
     console.warn('Lỗi nhạc nền:', e);
   }
@@ -115,22 +135,16 @@ export const stopBgMusic = () => {
   }
 };
 
-export const setBgMusicVolume = (volume) => {
-  if (bgAudio) bgAudio.volume = volume;
-};
-
-// ── Bật/tắt âm thanh ──
-let soundEnabled = true;
-
+// ── Tương thích cũ ──
 export const setSoundEnabled = (val) => {
-  soundEnabled = val;
+  updateSoundConfig({ masterEnabled: val });
   if (!val) stopBgMusic();
 };
 
-export const isSoundEnabled = () => soundEnabled;
+export const isSoundEnabled = () => soundConfig.masterEnabled;
 
 const wrap = (fn) => (...args) => {
-  if (soundEnabled) fn(...args);
+  if (soundConfig.masterEnabled && soundConfig.sfxEnabled) fn(...args);
 };
 
 export const sounds = {

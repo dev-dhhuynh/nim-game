@@ -1,14 +1,8 @@
-// =============================================
-// LOCAL STORAGE — Lưu & Tải trạng thái game
-// =============================================
+// Lưu & Tải trạng thái game
 
-const AUTO_SAVE_KEY  = 'nim_auto_save';    // ván dang dở
-const HISTORY_KEY    = 'nim_game_history'; // lịch sử ván đã chơi
+const AUTO_SAVE_KEY  = 'nim_auto_save';    
+const HISTORY_KEY    = 'nim_game_history'; 
 const SETTINGS_KEY   = 'nim_settings';
-
-// ---------------------------------------------
-// AUTO SAVE — Ván dang dở (tự động)
-// ---------------------------------------------
 
 // Lưu tự động ván đang chơi
 export const autoSaveGame = (gameState) => {
@@ -41,10 +35,6 @@ export const clearAutoSave = () => {
 export const hasAutoSave = () => {
   return localStorage.getItem(AUTO_SAVE_KEY) !== null;
 };
-
-// ---------------------------------------------
-// HISTORY — Lịch sử ván đã hoàn thành
-// ---------------------------------------------
 
 // Lưu ván vừa kết thúc vào lịch sử
 export const saveToHistory = (result) => {
@@ -87,9 +77,8 @@ export const deleteHistoryById = (id) => {
   } catch {}
 };
 
-// ---------------------------------------------
 // CÀI ĐẶT
-// ---------------------------------------------
+
 export const saveSettings = (settings) => {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));

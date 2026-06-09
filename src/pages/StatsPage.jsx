@@ -1,6 +1,5 @@
-// =============================================
-// STATS PAGE — Bảng thống kê các ván đã chơi
-// =============================================
+// Thống kê các ván đã chơi
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';

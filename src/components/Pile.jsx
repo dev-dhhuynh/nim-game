@@ -1,6 +1,5 @@
-// =============================================
-// PILE — Hàng que với animation nâng cấp
-// =============================================
+// Hàng que
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Pile.module.css';

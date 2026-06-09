@@ -1,6 +1,5 @@
-// =============================================
-// PLAYER PANEL — Thông tin người chơi
-// =============================================
+//Thông tin người chơi
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import styles from './PlayerPanel.module.css';

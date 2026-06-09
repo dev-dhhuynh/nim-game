@@ -1,6 +1,5 @@
-// =============================================
-// GAME PAGE — Màn hình chơi game chính
-// =============================================
+// Màn hình chơi game chính
+
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
@@ -13,6 +12,7 @@ import GameOverModal from '../components/GameOverModal';
 import ThemeSelector from '../components/ThemeSelector';
 import AIvsAIControls from '../components/AIvsAIControls';
 import HistoryModal from '../components/HistoryModal';
+import SoundSettings from '../components/SoundSettings';
 import { sounds } from '../utils/soundManager';
 import styles from './GamePage.module.css';
 import toast from 'react-hot-toast';
@@ -36,26 +36,22 @@ const GamePage = () => {
     stopAIvsAI, setAIvsAISpeed,
   } = useGameStore();
 
-  const [hint,          setHint]          = useState(null);
-  const [showHint,      setShowHint]      = useState(false);
-  const [elapsedTime,   setElapsedTime]   = useState(0);
-  const [showHistory,   setShowHistory]   = useState(false);
+  const [hint,        setHint]        = useState(null);
+  const [showHint,    setShowHint]    = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
 
   const currentTheme = getTheme(settings.theme || 'default');
   const hasBgImage   = !!currentTheme.bgImage;
 
-  // Đếm thời gian tổng
   useEffect(() => {
     if (gamePhase !== 'playing') return;
     const interval = setInterval(() => {
-      setElapsedTime(
-        Math.floor((Date.now() - gameStartTime) / 1000)
-      );
+      setElapsedTime(Math.floor((Date.now() - gameStartTime) / 1000));
     }, 1000);
     return () => clearInterval(interval);
   }, [gamePhase, gameStartTime]);
 
-  // Dừng AI vs AI khi unmount
   useEffect(() => {
     return () => stopAIvsAI();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,10 +87,6 @@ const GamePage = () => {
     toast('Đã đổi chủ đề!', { icon: '🎨' });
   };
 
-  const handleToggleSound = () => {
-    updateSettings({ soundEnabled: !settings.soundEnabled });
-  };
-
   const handleRestart = () => {
     stopAIvsAI();
     startGame(initialPiles);
@@ -105,7 +97,6 @@ const GamePage = () => {
     startGame(initialPiles);
   };
 
-  // Chơi lại từ lịch sử
   const handleReplay = (historyItem) => {
     if (historyItem.initialPiles) {
       updateSettings({
@@ -176,17 +167,12 @@ const GamePage = () => {
           <span className={styles.turnLabel}>
             Lượt #{turnCount + 1}
           </span>
-
-          {/* Đồng hồ đếm ngược */}
           {settings.countdownEnabled && !isAIvsAI && gamePhase === 'playing' && (
             <motion.span
               className={styles.countdown}
               style={{ color: getCountdownColor() }}
               key={countdownLeft}
-              animate={countdownLeft <= 5
-                ? { scale: [1, 1.2, 1] }
-                : { scale: 1 }
-              }
+              animate={countdownLeft <= 5 ? { scale: [1, 1.2, 1] } : { scale: 1 }}
               transition={{ duration: 0.3 }}
             >
               ⏳ {countdownLeft}s
@@ -199,13 +185,10 @@ const GamePage = () => {
             currentTheme={settings.theme}
             onChange={handleThemeChange}
           />
-          <button
-            className='btn btn-ghost'
-            style={{ padding: '5px 10px', fontSize: '0.75rem' }}
-            onClick={handleToggleSound}
-          >
-            {settings.soundEnabled ? '🔊' : '🔇'}
-          </button>
+
+          {/* Cài đặt âm thanh dạng popup */}
+          <SoundSettings mode='popup' />
+
           <button
             className='btn btn-ghost'
             style={{ padding: '5px 10px', fontSize: '0.65rem' }}
@@ -279,7 +262,6 @@ const GamePage = () => {
             </p>
           </div>
 
-          {/* Lịch sử nước đi */}
           <div className={styles.historyWrap}>
             <MoveHistory
               history={moveHistory}
@@ -299,7 +281,6 @@ const GamePage = () => {
             backgroundRepeat:   'no-repeat',
           } : {}}
         >
-          {/* Banner lượt chơi */}
           <motion.div
             className={styles.turnBanner}
             key={currentPlayer}
@@ -310,15 +291,9 @@ const GamePage = () => {
               <span className={styles.aiThinking}>
                 <motion.span
                   animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 0.8,
-                    repeat:   Infinity,
-                    ease:     'linear',
-                  }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                   style={{ display: 'inline-block' }}
-                >
-                  ⟳
-                </motion.span>
+                >⟳</motion.span>
                 &nbsp;{getName(currentPlayer)} đang suy nghĩ...
               </span>
             ) : (
@@ -335,7 +310,6 @@ const GamePage = () => {
             )}
           </motion.div>
 
-          {/* Các hàng que */}
           <div
             className={styles.piles}
             style={{
@@ -354,15 +328,12 @@ const GamePage = () => {
             ))}
           </div>
 
-          {/* Gợi ý */}
           <AnimatePresence>
             {showHint && hint && (
               <motion.div
                 className={`
                   ${styles.hintBox}
-                  ${hint.type === 'winning'
-                    ? styles.hintWin
-                    : styles.hintLose}
+                  ${hint.type === 'winning' ? styles.hintWin : styles.hintLose}
                 `}
                 initial={{ opacity: 0, y:  8 }}
                 animate={{ opacity: 1, y:  0 }}
@@ -373,25 +344,18 @@ const GamePage = () => {
             )}
           </AnimatePresence>
 
-          {/* Nút dưới */}
           {!isAIvsAI && (
             <div className={styles.boardActions}>
               <button
                 className='btn btn-ghost'
-                style={{
-                  fontSize: '0.72rem',
-                  ...(hasBgImage ? btnOnBg : {}),
-                }}
+                style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleHint}
               >
                 💡 Gợi ý
               </button>
               <button
                 className='btn btn-ghost'
-                style={{
-                  fontSize: '0.72rem',
-                  ...(hasBgImage ? btnOnBg : {}),
-                }}
+                style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleRestart}
               >
                 ↺ Chơi lại
@@ -403,10 +367,7 @@ const GamePage = () => {
             <div className={styles.boardActions}>
               <button
                 className='btn btn-ghost'
-                style={{
-                  fontSize: '0.72rem',
-                  ...(hasBgImage ? btnOnBg : {}),
-                }}
+                style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleAIvsAIReset}
               >
                 ↺ Ván mới

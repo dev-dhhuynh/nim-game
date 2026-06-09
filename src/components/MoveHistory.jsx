@@ -1,6 +1,6 @@
-// =============================================
-// MOVE HISTORY — Lịch sử các nước đi
-// =============================================
+
+// Lịch sử các nước đi
+
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './MoveHistory.module.css';

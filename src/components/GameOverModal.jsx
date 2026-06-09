@@ -1,6 +1,5 @@
-// =============================================
-// GAME OVER MODAL — Màn hình kết thúc ván
-// =============================================
+// Giao diện kết thúc ván
+
 import React from 'react';
 // Dòng mới — bỏ AnimatePresence đi
 import { motion } from 'framer-motion';

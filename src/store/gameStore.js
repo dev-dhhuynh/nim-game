@@ -1,6 +1,6 @@
-// =============================================
-// ZUSTAND STORE — Quản lý state toàn bộ game
-// =============================================
+
+// Quản lý state toàn bộ game
+
 import { create } from 'zustand';
 import {
   generateRandomPiles,

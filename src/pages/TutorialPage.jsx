@@ -1,14 +1,13 @@
-// =============================================
-// TUTORIAL PAGE — Màn hình hướng dẫn
-// =============================================
+// Màn hình hướng dẫn
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import styles from './TutorialPage.module.css';
 
-// ---------------------------------------------
+
 // Dữ liệu các bước hướng dẫn
-// ---------------------------------------------
+
 const STEPS = [
   {
     id:    1,
@@ -75,9 +74,8 @@ const STEPS = [
   },
 ];
 
-// ---------------------------------------------
 // Component demo hàng que nhỏ
-// ---------------------------------------------
+
 const MiniPile = ({ count, label }) => (
   <div className={styles.miniPile}>
     <span className={styles.miniLabel}>{label}</span>
@@ -90,9 +88,9 @@ const MiniPile = ({ count, label }) => (
   </div>
 );
 
-// ---------------------------------------------
+
 // Trang hướng dẫn chính
-// ---------------------------------------------
+
 const TutorialPage = () => {
   const { goToMenu, goToSetup } = useGameStore();
   const [currentStep, setCurrentStep] = useState(0);

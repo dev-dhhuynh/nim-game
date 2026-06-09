@@ -1,6 +1,5 @@
-// =============================================
-// APP.JS — Điều hướng chính
-// =============================================
+// Điều hướng chính
+
 import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';

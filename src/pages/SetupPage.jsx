@@ -1,5 +1,6 @@
-// Thiết lập game
-
+// =============================================
+// SETUP PAGE — Màn hình cấu hình trước khi chơi
+// =============================================
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
@@ -12,7 +13,8 @@ import styles from './SetupPage.module.css';
 const SetupPage = () => {
   const {
     settings, updateSettings,
-    startGame, goToMenu,
+    startGame, goToMenu, resumeGame,
+    piles, turnCount, moveHistory,
   } = useGameStore();
 
   const [localPiles,       setLocalPiles]       = useState([3, 5, 7]);
@@ -28,6 +30,13 @@ const SetupPage = () => {
   const [countdown,        setCountdown]        = useState(settings.countdownEnabled);
   const [countdownSecs,    setCountdownSecs]    = useState(settings.countdownSeconds);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showConfirmNew,   setShowConfirmNew]   = useState(false);
+
+  // Có trận đang chơi dở không?
+  const hasActiveGame =
+    turnCount > 0 &&
+    piles.some((p) => p > 0) &&
+    moveHistory.length > 0;
 
   const handleRandomize = () => setLocalPiles(generateRandomPiles(3, 5, 10));
 
@@ -49,7 +58,7 @@ const SetupPage = () => {
     setLocalPiles(next);
   };
 
-  const handleStart = () => {
+  const doStartGame = () => {
     updateSettings({
       gameMode:         mode,
       aiDifficulty:     difficulty,
@@ -64,6 +73,15 @@ const SetupPage = () => {
       countdownSeconds: countdownSecs,
     });
     startGame(localPiles);
+  };
+
+  // Bấm "Bắt đầu game"
+  const handleStart = () => {
+    if (hasActiveGame) {
+      setShowConfirmNew(true);
+    } else {
+      doStartGame();
+    }
   };
 
   const handleReplay = (historyItem) => {
@@ -114,7 +132,7 @@ const SetupPage = () => {
             style={{ padding: '6px 12px', fontSize: '0.7rem' }}
             onClick={goToMenu}
           >
-            ← Quay lại
+            🏠 Menu
           </button>
           <h2 className={styles.title}>THIẾT LẬP GAME</h2>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -132,7 +150,6 @@ const SetupPage = () => {
           </div>
         </div>
 
-        {/* Grid 2 cột */}
         <div className={styles.grid}>
 
           {/* ── CỘT TRÁI ── */}
@@ -168,7 +185,7 @@ const SetupPage = () => {
             >
               {mode === 'pvp' && (
                 <>
-                  <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                  <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
                     👤 TÊN NGƯỜI CHƠI
                   </p>
                   <div className={styles.nameInputs}>
@@ -192,7 +209,7 @@ const SetupPage = () => {
 
               {mode === 'pvc' && (
                 <>
-                  <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                  <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
                     👤 TÊN NGƯỜI CHƠI
                   </p>
                   <div className={styles.nameInputs}>
@@ -211,7 +228,7 @@ const SetupPage = () => {
                         onChange={(e) => setAiName(e.target.value)} />
                     </div>
                   </div>
-                  <p className={styles.sectionTitle} style={{ marginTop: 14 }}>
+                  <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
                     🧠 ĐỘ KHÓ AI
                   </p>
                   <DifficultyPicker value={difficulty} onChange={setDifficulty} />
@@ -220,7 +237,7 @@ const SetupPage = () => {
 
               {mode === 'aivai' && (
                 <>
-                  <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
+                  <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
                     🤖 CẤU HÌNH HAI BOT
                   </p>
                   <div className={styles.botCard}>
@@ -233,10 +250,10 @@ const SetupPage = () => {
                       <input className={styles.input} value={ai1Name}
                         maxLength={16} onChange={(e) => setAi1Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>Độ khó</p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>Độ khó</p>
                     <DifficultyPicker value={ai1Diff} onChange={setAi1Diff} />
                   </div>
-                  <div className={styles.botCard} style={{ marginTop: 10 }}>
+                  <div className={styles.botCard} style={{ marginTop: 8 }}>
                     <div className={styles.botHeader}>
                       <span style={{ color: 'var(--accent-gold)' }}>◆ Bot 2</span>
                     </div>
@@ -246,56 +263,53 @@ const SetupPage = () => {
                       <input className={styles.input} value={ai2Name}
                         maxLength={16} onChange={(e) => setAi2Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 8 }}>Độ khó</p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>Độ khó</p>
                     <DifficultyPicker value={ai2Diff} onChange={setAi2Diff} />
                   </div>
                 </>
               )}
             </motion.div>
 
-            {/* Misère */}
-            <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
-              🔀 BIẾN THỂ
-            </p>
-            <label className={styles.toggle}>
-              <input type='checkbox' checked={misere}
-                onChange={(e) => setMisere(e.target.checked)} />
-              <span className={styles.toggleSlider} />
-              <span>Misère — người lấy que cuối <strong>thua</strong></span>
-            </label>
+            {/* Misère + Đếm ngược — đặt cạnh nhau */}
+            <div className={styles.variantRow}>
+              <div>
+                <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
+                  🔀 BIẾN THỂ
+                </p>
+                <label className={styles.toggle}>
+                  <input type='checkbox' checked={misere}
+                    onChange={(e) => setMisere(e.target.checked)} />
+                  <span className={styles.toggleSlider} />
+                  <span>Misère — que cuối <strong>thua</strong></span>
+                </label>
+              </div>
 
-            {/* Đếm ngược */}
-            <p className={styles.sectionTitle} style={{ marginTop: 16 }}>
-              ⏱ ĐẾM NGƯỢC
-            </p>
-            <label className={styles.toggle}>
-              <input type='checkbox' checked={countdown}
-                onChange={(e) => setCountdown(e.target.checked)}
-                disabled={mode === 'aivai'} />
-              <span className={styles.toggleSlider} />
-              <span>
-                Giới hạn thời gian mỗi lượt
-                {mode === 'aivai' && (
-                  <em style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                    {' '}(không dùng cho AI vs AI)
-                  </em>
-                )}
-              </span>
-            </label>
+              <div>
+                <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
+                  ⏱ ĐẾM NGƯỢC
+                </p>
+                <label className={styles.toggle}>
+                  <input type='checkbox' checked={countdown}
+                    onChange={(e) => setCountdown(e.target.checked)}
+                    disabled={mode === 'aivai'} />
+                  <span className={styles.toggleSlider} />
+                  <span>Giới hạn thời gian/lượt</span>
+                </label>
+              </div>
+            </div>
 
             {countdown && mode !== 'aivai' && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1,  y:  0 }}
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 8 }}
               >
-                <p className={styles.sectionTitle}>Số giây mỗi lượt</p>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {[10, 15, 20, 30, 60].map((sec) => (
                     <button
                       key={sec}
                       className={`btn ${countdownSecs === sec ? 'btn-primary' : 'btn-ghost'}`}
-                      style={{ padding: '5px 14px', fontSize: '0.75rem' }}
+                      style={{ padding: '4px 12px', fontSize: '0.7rem' }}
                       onClick={() => setCountdownSecs(sec)}
                     >
                       {sec}s
@@ -304,11 +318,6 @@ const SetupPage = () => {
                 </div>
               </motion.div>
             )}
-
-            {/* Cài đặt âm thanh */}
-            <div style={{ marginTop: 16 }}>
-              <SoundSettings mode='panel' />
-            </div>
 
           </div>
 
@@ -381,8 +390,20 @@ const SetupPage = () => {
           </div>
         </div>
 
+        {/* Cài đặt âm thanh — full width, gọn ngang */}
+        <SoundSettings mode='panel' />
+
         {/* Footer */}
         <div className={styles.footer}>
+          {hasActiveGame && (
+            <button
+              className='btn btn-secondary'
+              style={{ padding: '10px 24px', fontSize: '0.8rem' }}
+              onClick={resumeGame}
+            >
+              ↩ Quay Lại Trận (Lượt #{turnCount + 1})
+            </button>
+          )}
           <button
             className={`btn btn-primary ${styles.startBtn}`}
             onClick={handleStart}
@@ -401,6 +422,52 @@ const SetupPage = () => {
             onReplay={handleReplay}
             onClose={() => setShowHistoryModal(false)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Confirm bắt đầu ván mới khi đang có trận dở */}
+      <AnimatePresence>
+        {showConfirmNew && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowConfirmNew(false)}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ scale: 0.9, y: -20 }}
+              animate={{ scale: 1,   y:   0 }}
+              exit={{ scale: 0.9,    y: -20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className={styles.confirmTitle}>⚠️ Bắt đầu ván mới?</p>
+              <p className={styles.confirmDesc}>
+                Bạn đang có một trận chưa kết thúc (Lượt #{turnCount + 1}).
+                Bắt đầu ván mới sẽ <strong>hủy tiến trình hiện tại</strong> nếu chưa lưu.
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  className='btn btn-ghost'
+                  style={{ fontSize: '0.75rem' }}
+                  onClick={() => setShowConfirmNew(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  className='btn btn-danger'
+                  style={{ fontSize: '0.75rem', padding: '8px 16px' }}
+                  onClick={() => {
+                    setShowConfirmNew(false);
+                    doStartGame();
+                  }}
+                >
+                  ▶ Bắt Đầu Ván Mới
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

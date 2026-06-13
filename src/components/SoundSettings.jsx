@@ -1,17 +1,15 @@
-//Cài đặt âm thanh
-
+// =============================================
+// SOUND SETTINGS — Cài đặt âm thanh
+// =============================================
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSoundConfig, updateSoundConfig, playPickSound } from '../utils/soundManager';
 import styles from './SoundSettings.module.css';
 
 const SoundSettings = ({ mode = 'panel' }) => {
-  // mode: 'panel' (trong setup) | 'popup' (trong game)
+  const [isOpen, setIsOpen] = useState(mode === 'panel');
+  const [config, setConfig] = useState(getSoundConfig());
 
-  const [isOpen,  setIsOpen]  = useState(mode === 'panel');
-  const [config,  setConfig]  = useState(getSoundConfig());
-
-  // Đồng bộ config khi mở
   useEffect(() => {
     if (isOpen) setConfig(getSoundConfig());
   }, [isOpen]);
@@ -22,24 +20,19 @@ const SoundSettings = ({ mode = 'panel' }) => {
     updateSoundConfig({ [key]: value });
   };
 
-  // Preview tiếng click khi kéo thanh sfx
   const handleSfxVolume = (val) => {
     handleChange('sfxVolume', val);
     playPickSound();
   };
 
-  const content = (
+  // ── Nội dung dạng PANEL (ngang, gọn) ──
+  const panelContent = (
     <div className={styles.content}>
 
       {/* Bật/tắt tất cả */}
       <div className={styles.row}>
-        <div className={styles.rowLeft}>
-          <span className={styles.rowIcon}>🔊</span>
-          <div>
-            <p className={styles.rowLabel}>Toàn bộ âm thanh</p>
-            <p className={styles.rowDesc}>Bật/tắt tất cả âm thanh</p>
-          </div>
-        </div>
+        <span className={styles.rowIcon}>🔊</span>
+        <span className={styles.rowLabel}>Âm thanh</span>
         <label className={styles.toggle}>
           <input
             type='checkbox'
@@ -54,10 +47,97 @@ const SoundSettings = ({ mode = 'panel' }) => {
 
         {/* Nhạc nền */}
         <div className={styles.row}>
+          <span className={styles.rowIcon}>🎵</span>
+          <span className={styles.rowLabel}>Nhạc</span>
+          <label className={styles.toggle}>
+            <input
+              type='checkbox'
+              checked={config.musicEnabled}
+              onChange={(e) => handleChange('musicEnabled', e.target.checked)}
+              disabled={!config.masterEnabled}
+            />
+            <span className={styles.toggleSlider} />
+          </label>
+          {config.musicEnabled && (
+            <div className={styles.volumeRow}>
+              <input
+                type='range'
+                className={styles.slider}
+                min={0} max={1} step={0.05}
+                value={config.musicVolume}
+                disabled={!config.masterEnabled}
+                onChange={(e) => handleChange('musicVolume', Number(e.target.value))}
+              />
+              <span className={styles.volValue}>
+                {Math.round(config.musicVolume * 100)}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Hiệu ứng âm thanh */}
+        <div className={styles.row}>
+          <span className={styles.rowIcon}>🖱️</span>
+          <span className={styles.rowLabel}>Hiệu ứng</span>
+          <label className={styles.toggle}>
+            <input
+              type='checkbox'
+              checked={config.sfxEnabled}
+              onChange={(e) => handleChange('sfxEnabled', e.target.checked)}
+              disabled={!config.masterEnabled}
+            />
+            <span className={styles.toggleSlider} />
+          </label>
+          {config.sfxEnabled && (
+            <div className={styles.volumeRow}>
+              <input
+                type='range'
+                className={styles.slider}
+                min={0} max={1} step={0.05}
+                value={config.sfxVolume}
+                disabled={!config.masterEnabled}
+                onChange={(e) => handleSfxVolume(Number(e.target.value))}
+              />
+              <span className={styles.volValue}>
+                {Math.round(config.sfxVolume * 100)}%
+              </span>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+
+  // ── Nội dung dạng POPUP (dọc, đầy đủ) ──
+  const popupContent = (
+    <div className={styles.popupContentWrap}>
+
+      <div className={styles.popupRow}>
+        <div className={styles.rowLeft}>
+          <span className={styles.rowIcon}>🔊</span>
+          <div>
+            <p className={styles.rowLabelFull}>Toàn bộ âm thanh</p>
+            <p className={styles.rowDesc}>Bật/tắt tất cả âm thanh</p>
+          </div>
+        </div>
+        <label className={styles.toggle}>
+          <input
+            type='checkbox'
+            checked={config.masterEnabled}
+            onChange={(e) => handleChange('masterEnabled', e.target.checked)}
+          />
+          <span className={styles.toggleSlider} />
+        </label>
+      </div>
+
+      <div className={`${styles.popupSubSection} ${!config.masterEnabled ? styles.disabled : ''}`}>
+
+        <div className={styles.popupRow}>
           <div className={styles.rowLeft}>
             <span className={styles.rowIcon}>🎵</span>
             <div>
-              <p className={styles.rowLabel}>Nhạc nền</p>
+              <p className={styles.rowLabelFull}>Nhạc nền</p>
               <p className={styles.rowDesc}>Nhạc theo từng chủ đề</p>
             </div>
           </div>
@@ -72,10 +152,9 @@ const SoundSettings = ({ mode = 'panel' }) => {
           </label>
         </div>
 
-        {/* Âm lượng nhạc */}
         {config.musicEnabled && (
           <motion.div
-            className={styles.volumeRow}
+            className={styles.popupVolumeRow}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -83,7 +162,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
             <span className={styles.volLabel}>🔈</span>
             <input
               type='range'
-              className={styles.slider}
+              className={styles.sliderFull}
               min={0} max={1} step={0.05}
               value={config.musicVolume}
               disabled={!config.masterEnabled}
@@ -95,12 +174,11 @@ const SoundSettings = ({ mode = 'panel' }) => {
           </motion.div>
         )}
 
-        {/* Hiệu ứng âm thanh */}
-        <div className={styles.row}>
+        <div className={styles.popupRow}>
           <div className={styles.rowLeft}>
             <span className={styles.rowIcon}>🖱️</span>
             <div>
-              <p className={styles.rowLabel}>Hiệu ứng âm thanh</p>
+              <p className={styles.rowLabelFull}>Hiệu ứng âm thanh</p>
               <p className={styles.rowDesc}>Tiếng click, thắng, thua</p>
             </div>
           </div>
@@ -115,10 +193,9 @@ const SoundSettings = ({ mode = 'panel' }) => {
           </label>
         </div>
 
-        {/* Âm lượng hiệu ứng */}
         {config.sfxEnabled && (
           <motion.div
-            className={styles.volumeRow}
+            className={styles.popupVolumeRow}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -126,7 +203,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
             <span className={styles.volLabel}>🔈</span>
             <input
               type='range'
-              className={styles.slider}
+              className={styles.sliderFull}
               min={0} max={1} step={0.05}
               value={config.sfxVolume}
               disabled={!config.masterEnabled}
@@ -142,12 +219,14 @@ const SoundSettings = ({ mode = 'panel' }) => {
     </div>
   );
 
-  // Mode panel — dùng trong Setup
+  // Mode panel — dùng trong Setup (ngang, gọn)
   if (mode === 'panel') {
     return (
       <div className={styles.panel}>
-        <p className={styles.panelTitle}>🎵 CÀI ĐẶT ÂM THANH</p>
-        {content}
+        <div className={styles.panelRow}>
+          <span className={styles.panelTitleInline}>🎵 ÂM THANH</span>
+          {panelContent}
+        </div>
       </div>
     );
   }
@@ -166,7 +245,6 @@ const SoundSettings = ({ mode = 'panel' }) => {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Click ngoài để đóng */}
             <div
               className={styles.backdrop}
               onClick={() => setIsOpen(false)}
@@ -185,7 +263,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
                   onClick={() => setIsOpen(false)}
                 >✕</button>
               </div>
-              {content}
+              {popupContent}
             </motion.div>
           </>
         )}

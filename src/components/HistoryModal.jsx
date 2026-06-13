@@ -1,19 +1,25 @@
-
-// Lịch sử đấu
-
+// =============================================
+// HISTORY MODAL — Lịch sử các ván đã chơi
+// =============================================
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getHistory, clearHistory, deleteHistoryById } from '../utils/storage';
 import styles from './HistoryModal.module.css';
 
-const HistoryModal = ({ isOpen, onReplay, onClose }) => {
+const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
   const [history,       setHistory]       = useState([]);
+  const [filter,        setFilter]        = useState('all'); // all | inprogress | finished
   const [confirmClear,  setConfirmClear]  = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (isOpen) setHistory(getHistory());
   }, [isOpen]);
+
+  // Lọc theo loại
+  const filtered = filter === 'all'
+    ? history
+    : history.filter((h) => h.type === filter);
 
   // Format ngày giờ
   const formatDate = (iso) => {
@@ -99,101 +105,145 @@ const HistoryModal = ({ isOpen, onReplay, onClose }) => {
               onClick={handleClearAll}
               disabled={history.length === 0}
             >
-              {confirmClear ? '⚠ Xác nhận xóa?' : '🗑 Xóa tất cả'}
+              {confirmClear ? '⚠ Xác nhận?' : '🗑 Xóa tất cả'}
             </button>
             <button className={styles.closeBtn} onClick={onClose}>✕</button>
           </div>
         </div>
 
-        {/* Đếm số ván */}
-        <div className={styles.countRow}>
-          <span className={styles.countLabel}>TỔNG CỘNG</span>
-          <span className={styles.countBadge}>{history.length} ván</span>
+        {/* Bộ lọc */}
+        <div className={styles.filters}>
+          {[
+            { key: 'all',        label: `Tất cả (${history.length})`                                    },
+            { key: 'inprogress', label: `🔄 Đang dở (${history.filter(h => h.type === 'inprogress').length})` },
+            { key: 'finished',   label: `✅ Đã xong (${history.filter(h => h.type === 'finished').length})`   },
+          ].map((f) => (
+            <button
+              key={f.key}
+              className={`${styles.filterBtn} ${filter === f.key ? styles.filterActive : ''}`}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
         {/* Danh sách */}
         <div className={styles.list}>
           <AnimatePresence>
-            {history.length === 0 ? (
+            {filtered.length === 0 ? (
               <motion.div
                 className={styles.empty}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 <span className={styles.emptyIcon}>📭</span>
-                <p>Chưa có ván nào được ghi lại</p>
+                <p>Chưa có ván nào</p>
                 <p className={styles.emptyNote}>
-                  Chơi xong một ván sẽ tự động lưu vào đây
+                  {filter === 'inprogress'
+                    ? 'Ấn 💾 trong game để lưu ván đang dở'
+                    : 'Chơi xong một ván sẽ tự động lưu vào đây'}
                 </p>
               </motion.div>
             ) : (
-              history.map((h, i) => (
+              filtered.map((h, i) => (
                 <motion.div
                   key={h.id}
-                  className={styles.item}
+                  className={`${styles.item} ${h.type === 'inprogress' ? styles.itemInProgress : styles.itemFinished}`}
                   initial={{ opacity: 0, x: -16 }}
                   animate={{ opacity: 1,  x:   0 }}
                   exit={{    opacity: 0,  x:  16 }}
                   transition={{ delay: i * 0.04 }}
                 >
-                  {/* Kết quả */}
-                  <div className={styles.result}>
-                    <span className={`
-                      ${styles.winnerName}
-                      ${h.winner === 0 ? styles.p0Win : styles.p1Win}
-                    `}>
-                      {getWinnerName(h)}
-                    </span>
-                    <span className={styles.winLabel}>thắng</span>
-                    {h.endReason === 'timeout' && (
-                      <span className={styles.timeoutBadge}>⏱ Hết giờ</span>
+                  {/* Badge loại ván */}
+                  <div className={styles.typeBadge}>
+                    {h.type === 'inprogress' ? (
+                      <span className={styles.badgeInProgress}>🔄 Đang dở</span>
+                    ) : (
+                      <span className={styles.badgeFinished}>✅ Đã xong</span>
                     )}
                   </div>
 
-                  {/* Thông tin */}
-                  <div className={styles.info}>
-                    <span className={styles.mode}>{getModeName(h.mode)}</span>
-                    {h.mode === 'pvc' && (
-                      <span className={styles.diff}>{h.difficulty}</span>
-                    )}
-                  </div>
+                  {/* Tên ván (dở) hoặc kết quả (xong) */}
+                  {h.type === 'inprogress' ? (
+                    <div className={styles.saveInfo}>
+                      <span className={styles.saveName}>{h.saveName}</span>
+                      <div className={styles.saveMeta}>
+                        <span>{getModeName(h.settings?.gameMode)}</span>
+                        <span className={styles.dot}>·</span>
+                        <span>Lượt {h.turnCount || 0}</span>
+                        <span className={styles.dot}>·</span>
+                        <span>{formatDate(h.savedAt)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.saveInfo}>
+                      <div className={styles.result}>
+                        <span className={`
+                          ${styles.winnerName}
+                          ${h.winner === 0 ? styles.p0Win : styles.p1Win}
+                        `}>
+                          {getWinnerName(h)}
+                        </span>
+                        <span className={styles.winLabel}>thắng</span>
+                        {h.endReason === 'timeout' && (
+                          <span className={styles.timeoutBadge}>⏱ Hết giờ</span>
+                        )}
+                      </div>
+                      <div className={styles.saveMeta}>
+                        <span>{getModeName(h.mode)}</span>
+                        {h.mode === 'pvc' && (
+                          <span className={styles.diff}>{h.difficulty}</span>
+                        )}
+                        <span className={styles.dot}>·</span>
+                        <span>{h.turns || 0} lượt</span>
+                        <span className={styles.dot}>·</span>
+                        <span>{formatDuration(h.duration)}</span>
+                        <span className={styles.dot}>·</span>
+                        <span>{formatDate(h.date || h.savedAt)}</span>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* Preview piles ban đầu */}
-                  {h.initialPiles && (
+                  {/* Preview piles */}
+                  {(h.initialPiles || h.piles) && (
                     <div className={styles.pilesPreview}>
-                      {h.initialPiles.map((count, j) => (
+                      {(h.initialPiles || h.piles).map((count, j) => (
                         <span key={j} className={styles.pileChip}>{count}</span>
                       ))}
                     </div>
                   )}
 
-                  {/* Số liệu */}
-                  <div className={styles.stats}>
-                    <span>{h.turns || '—'} lượt</span>
-                    <span className={styles.dot}>·</span>
-                    <span>{formatDuration(h.duration)}</span>
-                    <span className={styles.dot}>·</span>
-                    <span>{formatDate(h.date)}</span>
-                  </div>
-
                   {/* Nút hành động */}
                   <div className={styles.actions}>
-                    {/* Chơi lại với cùng cấu hình */}
-                    {h.initialPiles && (
+                    {h.type === 'inprogress' ? (
                       <button
                         className='btn btn-primary'
-                        style={{ padding: '4px 10px', fontSize: '0.62rem' }}
+                        style={{ padding: '4px 12px', fontSize: '0.65rem' }}
                         onClick={() => {
-                          onReplay(h);
+                          onContinue && onContinue(h);
                           onClose();
                         }}
                       >
-                        ↺ Chơi lại
+                        ▶ Tiếp tục
                       </button>
+                    ) : (
+                      h.initialPiles && (
+                        <button
+                          className='btn btn-primary'
+                          style={{ padding: '4px 12px', fontSize: '0.65rem' }}
+                          onClick={() => {
+                            onReplay && onReplay(h);
+                            onClose();
+                          }}
+                        >
+                          ↺ Chơi lại
+                        </button>
+                      )
                     )}
                     <button
                       className={`btn ${confirmDelete === h.id ? 'btn-danger' : 'btn-ghost'}`}
-                      style={{ padding: '4px 8px', fontSize: '0.62rem' }}
+                      style={{ padding: '4px 8px', fontSize: '0.65rem' }}
                       onClick={() => handleDelete(h.id)}
                     >
                       {confirmDelete === h.id ? '⚠?' : '🗑'}

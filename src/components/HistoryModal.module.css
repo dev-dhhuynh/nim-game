@@ -1,4 +1,3 @@
-/* Overlay */
 .overlay {
     position: fixed;
     inset: 0;
@@ -10,18 +9,17 @@
     z-index: 200;
 }
 
-/* Modal */
 .modal {
     background: #16161f;
     border: 1px solid #35354a;
     border-radius: var(--radius-lg);
     padding: 24px;
     width: 90%;
-    max-width: 560px;
-    max-height: 80vh;
+    max-width: 580px;
+    max-height: 82vh;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 /* Header */
@@ -54,33 +52,35 @@
     color: #ff4571;
 }
 
-/* Đếm */
-.countRow {
+/* Bộ lọc */
+.filters {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #35354a;
+    gap: 6px;
     flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
-.countLabel {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
+.filterBtn {
+    padding: 5px 12px;
+    background: #21212f;
+    border: 1px solid #35354a;
+    border-radius: 20px;
     color: #a8a8c8;
-    font-weight: 700;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: var(--transition);
 }
 
-.countBadge {
-    background: rgba(0, 245, 196, 0.15);
-    border: 1px solid rgba(0, 245, 196, 0.3);
-    border-radius: 10px;
-    padding: 2px 10px;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: #00f5c4;
-    font-weight: 700;
+.filterBtn:hover {
+    border-color: #00f5c4;
+    color: #f0f0ff;
+}
+
+.filterActive {
+    background: rgba(0, 245, 196, 0.1) !important;
+    border-color: #00f5c4 !important;
+    color: #00f5c4 !important;
 }
 
 /* Danh sách */
@@ -122,19 +122,82 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 14px 16px;
-    background: #21212f;
-    border: 1px solid #35354a;
+    padding: 12px 14px;
     border-radius: var(--radius);
+    border: 1px solid #35354a;
     transition: var(--transition);
 }
 
+.itemInProgress {
+    background: #1e1e2e;
+    border-left: 3px solid #ffd000;
+}
+
+.itemFinished {
+    background: #21212f;
+    border-left: 3px solid #00f5c4;
+}
+
 .item:hover {
-    border-color: rgba(0, 245, 196, 0.35);
     background: #26263a;
 }
 
-/* Kết quả */
+/* Badge loại */
+.typeBadge {
+    display: flex;
+}
+
+.badgeInProgress {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    background: rgba(255, 208, 0, 0.12);
+    border: 1px solid rgba(255, 208, 0, 0.3);
+    border-radius: 10px;
+    padding: 2px 8px;
+    color: #ffd000;
+    font-weight: 700;
+}
+
+.badgeFinished {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    background: rgba(0, 245, 196, 0.1);
+    border: 1px solid rgba(0, 245, 196, 0.25);
+    border-radius: 10px;
+    padding: 2px 8px;
+    color: #00f5c4;
+    font-weight: 700;
+}
+
+/* Thông tin ván */
+.saveInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.saveName {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #f0f0ff;
+}
+
+.saveMeta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: #a8a8c8;
+    flex-wrap: wrap;
+}
+
+.dot {
+    color: #35354a;
+}
+
+/* Kết quả ván xong */
 .result {
     display: flex;
     align-items: center;
@@ -171,19 +234,6 @@
     color: #ff4571;
 }
 
-/* Thông tin */
-.info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.mode {
-    font-size: 0.82rem;
-    color: #f0f0ff;
-    font-weight: 600;
-}
-
 .diff {
     font-family: var(--font-mono);
     font-size: 0.6rem;
@@ -192,7 +242,6 @@
     border: 1px solid rgba(255, 69, 113, 0.25);
     border-radius: 8px;
     padding: 2px 8px;
-    font-weight: 700;
 }
 
 /* Preview piles */
@@ -203,8 +252,8 @@
 }
 
 .pileChip {
-    background: rgba(0, 245, 196, 0.12);
-    border: 1px solid rgba(0, 245, 196, 0.3);
+    background: rgba(0, 245, 196, 0.08);
+    border: 1px solid rgba(0, 245, 196, 0.2);
     border-radius: 4px;
     padding: 2px 8px;
     font-family: var(--font-mono);
@@ -213,30 +262,13 @@
     font-weight: 700;
 }
 
-/* Số liệu */
-.stats {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: #a8a8c8;
-    font-weight: 600;
-}
-
-.dot {
-    color: #35354a;
-}
-
 /* Nút */
 .actions {
     display: flex;
     gap: 6px;
     justify-content: flex-end;
-    margin-top: 2px;
 }
 
-/* btn-danger */
 :global(.btn-danger) {
     background: transparent;
     color: #ff4571;

@@ -215,3 +215,57 @@
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid currentColor;
 }
+
+/* Popup nhập tên khi lưu */
+.saveOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 80px;
+    z-index: 150;
+}
+
+.savePopup {
+    background: #16161f;
+    border: 1px solid #35354a;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.savePopupTitle {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: #00f5c4;
+}
+
+.saveInput {
+    background: #21212f;
+    border: 1px solid #35354a;
+    border-radius: var(--radius);
+    color: #f0f0ff;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    outline: none;
+    width: 100%;
+    transition: var(--transition);
+}
+
+.saveInput:focus {
+    border-color: #00f5c4;
+}
+
+.savePopupActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}

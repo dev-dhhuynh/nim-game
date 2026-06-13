@@ -1,7 +1,6 @@
 // Giao diện kết thúc ván
 
 import React from 'react';
-// Dòng mới — bỏ AnimatePresence đi
 import { motion } from 'framer-motion';
 import styles from './GameOverModal.module.css';
 
@@ -13,14 +12,20 @@ const GameOverModal = ({
   onMenu,       // hàm về menu
 }) => {
 
-  // Lấy tên người thắng
+  // Lấy tên người thắng — xử lý đủ cả pvp, pvc, aivai
   const getName = (idx) => {
-    if (settings.gameMode === 'pvc' && idx === 1) return settings.aiName;
+    if (settings.gameMode === 'aivai') {
+      return idx === 0 ? settings.ai1Name : settings.ai2Name;
+    }
+    if (settings.gameMode === 'pvc' && idx === 1) {
+      return settings.aiName;
+    }
     return playerNames[idx];
   };
 
   const winnerName = getName(winner);
-  const isAIWon   = settings.gameMode === 'pvc' && winner === 1;
+  const isAIWon    = settings.gameMode === 'pvc' && winner === 1;
+  const isAIvsAI   = settings.gameMode === 'aivai';
 
   return (
     <motion.div
@@ -49,7 +54,7 @@ const GameOverModal = ({
         {/* Kết quả */}
         <div className={styles.result}>
           <p className={styles.label}>
-            {isAIWon ? 'MÁY THẮNG' : 'NGƯỜI THẮNG'}
+            {isAIWon ? 'MÁY THẮNG' : isAIvsAI ? 'BOT THẮNG' : 'NGƯỜI THẮNG'}
           </p>
           <p className={`${styles.winnerName} ${isAIWon ? styles.aiWin : styles.humanWin}`}>
             {winnerName}
@@ -60,6 +65,8 @@ const GameOverModal = ({
         <p className={styles.message}>
           {isAIWon
             ? 'AI đã tính toán hoàn hảo! Thử lại nhé.'
+            : isAIvsAI
+            ? `${winnerName} đã chiến thắng! Xem lại nước đi để học chiến thuật.`
             : `Chúc mừng ${winnerName}! Chiến lược xuất sắc!`}
         </p>
 
@@ -73,8 +80,8 @@ const GameOverModal = ({
           </button>
         </div>
 
-        {/* Confetti chỉ hiện khi người thắng */}
-        {!isAIWon && (
+        {/* Confetti chỉ hiện khi người thắng (không hiện khi AI/Bot thắng) */}
+        {!isAIWon && !isAIvsAI && (
           <div className={styles.confetti}>
             {[...Array(20)].map((_, i) => (
               <motion.span

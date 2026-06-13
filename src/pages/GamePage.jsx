@@ -1,5 +1,6 @@
-// Màn hình chơi game chính
-
+// =============================================
+// GAME PAGE — Màn hình chơi game chính
+// =============================================
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
@@ -30,20 +31,24 @@ const GamePage = () => {
     turnCount, gameStartTime, isAIvsAI,
     aivsaiRunning, aivsaiSpeed, initialPiles,
     countdownLeft,
-    makeMove, undoMove,
-    goToSetup, startGame, updateSettings,
+    makeMove, undoMove, saveCurrentGame,
+    goToSetup, goToMenu, startGame, updateSettings,
     startAIvsAI, pauseAIvsAI, stepAIvsAI,
     stopAIvsAI, setAIvsAISpeed,
+    continueFromSave,
   } = useGameStore();
 
-  const [hint,        setHint]        = useState(null);
-  const [showHint,    setShowHint]    = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [showHistory, setShowHistory] = useState(false);
+  const [hint,          setHint]          = useState(null);
+  const [showHint,      setShowHint]      = useState(false);
+  const [elapsedTime,   setElapsedTime]   = useState(0);
+  const [showHistory,   setShowHistory]   = useState(false);
+  const [showSaveName,  setShowSaveName]  = useState(false);
+  const [saveName,      setSaveName]      = useState('');
 
   const currentTheme = getTheme(settings.theme || 'default');
   const hasBgImage   = !!currentTheme.bgImage;
 
+  // Đếm thời gian
   useEffect(() => {
     if (gamePhase !== 'playing') return;
     const interval = setInterval(() => {
@@ -52,6 +57,7 @@ const GamePage = () => {
     return () => clearInterval(interval);
   }, [gamePhase, gameStartTime]);
 
+  // Dừng AI vs AI khi unmount
   useEffect(() => {
     return () => stopAIvsAI();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,6 +103,24 @@ const GamePage = () => {
     startGame(initialPiles);
   };
 
+  // Lưu ván đang dở
+  const handleSave = () => {
+    setSaveName(`Ván dở — ${new Date().toLocaleString('vi-VN')}`);
+    setShowSaveName(true);
+  };
+
+  const handleConfirmSave = () => {
+    const ok = saveCurrentGame(saveName);
+    if (ok) {
+      if (settings.soundEnabled) sounds.save();
+      toast.success('Đã lưu ván!');
+    } else {
+      toast.error('Lưu thất bại!');
+    }
+    setShowSaveName(false);
+  };
+
+  // Chơi lại từ lịch sử
   const handleReplay = (historyItem) => {
     if (historyItem.initialPiles) {
       updateSettings({
@@ -108,6 +132,12 @@ const GamePage = () => {
       });
       startGame(historyItem.initialPiles);
     }
+  };
+
+  // Tiếp tục ván dở
+  const handleContinue = (saved) => {
+    continueFromSave(saved);
+    toast.success('Đã tải ván!');
   };
 
   const formatTime = (s) => {
@@ -144,13 +174,22 @@ const GamePage = () => {
 
       {/* ── THANH TRÊN ── */}
       <div className={styles.topBar}>
-        <button
-          className='btn btn-ghost'
-          style={{ padding: '6px 12px', fontSize: '0.65rem' }}
-          onClick={goToSetup}
-        >
-          ← Thiết lập
-        </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            className='btn btn-ghost'
+            style={{ padding: '6px 12px', fontSize: '0.65rem' }}
+            onClick={goToMenu}
+          >
+            🏠 Menu
+          </button>
+          <button
+            className='btn btn-ghost'
+            style={{ padding: '6px 12px', fontSize: '0.65rem' }}
+            onClick={goToSetup}
+          >
+            ← Thiết lập
+          </button>
+        </div>
 
         <div className={styles.gameInfo}>
           <span className='badge badge-primary'>
@@ -185,9 +224,18 @@ const GamePage = () => {
             currentTheme={settings.theme}
             onChange={handleThemeChange}
           />
-
-          {/* Cài đặt âm thanh dạng popup */}
           <SoundSettings mode='popup' />
+
+          {/* Nút lưu ván — ẩn khi AI vs AI */}
+          {!isAIvsAI && gamePhase === 'playing' && (
+            <button
+              className='btn btn-ghost'
+              style={{ padding: '5px 10px', fontSize: '0.65rem' }}
+              onClick={handleSave}
+            >
+              💾 Lưu
+            </button>
+          )}
 
           <button
             className='btn btn-ghost'
@@ -196,6 +244,7 @@ const GamePage = () => {
           >
             📁 Lịch sử
           </button>
+
           {!isAIvsAI && (
             <button
               className='btn btn-ghost'
@@ -208,6 +257,56 @@ const GamePage = () => {
           )}
         </div>
       </div>
+
+      {/* ── POPUP NHẬP TÊN KHI LƯU ── */}
+      <AnimatePresence>
+        {showSaveName && (
+          <motion.div
+            className={styles.saveOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSaveName(false)}
+          >
+            <motion.div
+              className={styles.savePopup}
+              initial={{ scale: 0.9, y: -20 }}
+              animate={{ scale: 1,   y:   0 }}
+              exit={{ scale: 0.9,    y: -20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className={styles.savePopupTitle}>💾 Đặt tên cho ván</p>
+              <input
+                className={styles.saveInput}
+                value={saveName}
+                maxLength={30}
+                autoFocus
+                onChange={(e) => setSaveName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleConfirmSave();
+                  if (e.key === 'Escape') setShowSaveName(false);
+                }}
+              />
+              <div className={styles.savePopupActions}>
+                <button
+                  className='btn btn-ghost'
+                  style={{ fontSize: '0.72rem' }}
+                  onClick={() => setShowSaveName(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  className='btn btn-primary'
+                  style={{ fontSize: '0.72rem' }}
+                  onClick={handleConfirmSave}
+                >
+                  💾 Lưu
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── NỘI DUNG CHÍNH ── */}
       <div className={styles.content}>
@@ -396,6 +495,7 @@ const GamePage = () => {
           <HistoryModal
             isOpen={showHistory}
             onReplay={handleReplay}
+            onContinue={handleContinue}
             onClose={() => setShowHistory(false)}
           />
         )}

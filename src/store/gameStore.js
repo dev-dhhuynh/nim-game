@@ -1,6 +1,6 @@
-
-// Quản lý state toàn bộ game
-
+// =============================================
+// ZUSTAND STORE — Quản lý state toàn bộ game
+// =============================================
 import { create } from 'zustand';
 import {
   generateRandomPiles,
@@ -11,9 +11,7 @@ import {
   PRESETS,
 } from '../utils/nimLogic';
 import {
-  autoSaveGame,
-  loadAutoSave,
-  clearAutoSave,
+  saveInProgress,
   saveToHistory,
   saveSettings,
   loadSettings,
@@ -103,15 +101,17 @@ export const useGameStore = create((set, get) => ({
         const { currentPlayer } = get();
         const winner = currentPlayer === 0 ? 1 : 0;
         if (s.soundEnabled) playLoseSound();
-        clearAutoSave();
         saveToHistory({
           winner,
-          mode:       s.gameMode,
-          difficulty: s.aiDifficulty,
-          turns:      get().turnCount,
-          duration:   Math.round((Date.now() - get().gameStartTime) / 1000),
+          mode:         s.gameMode,
+          difficulty:   s.aiDifficulty,
+          turns:        get().turnCount,
+          duration:     Math.round((Date.now() - get().gameStartTime) / 1000),
           initialPiles: get().initialPiles,
-          endReason:  'timeout',
+          playerNames:  s.playerNames,
+          aiName:       s.aiName,
+          misere:       s.misereVariant,
+          endReason:    'timeout',
         });
         stopBgMusic();
         set({ gamePhase: 'gameover', winner, nimSum: 0 });
@@ -145,7 +145,6 @@ export const useGameStore = create((set, get) => ({
 
     get().stopAIvsAI();
     get().clearCountdown();
-    clearAutoSave();
 
     if (settings.soundEnabled) playBgMusic(settings.theme);
 
@@ -170,11 +169,21 @@ export const useGameStore = create((set, get) => ({
     }
   },
 
-  // ── Tiếp tục ván dang dở ───────────────────
-  continueGame: () => {
-    const saved = loadAutoSave();
-    if (!saved) return false;
+  // ── Lưu ván đang dở (thủ công) ─────────────
+  saveCurrentGame: (saveName = '') => {
+    const {
+      piles, initialPiles, currentPlayer,
+      moveHistory, settings, turnCount, gameStartTime,
+    } = get();
+    return saveInProgress({
+      piles, initialPiles, currentPlayer,
+      moveHistory, settings, turnCount, gameStartTime,
+    }, saveName);
+  },
 
+  // ── Tiếp tục ván đã lưu ────────────────────
+  continueFromSave: (saved) => {
+    if (!saved) return false;
     if (saved.settings?.theme) applyTheme(saved.settings.theme);
 
     get().clearCountdown();
@@ -194,12 +203,11 @@ export const useGameStore = create((set, get) => ({
       winner:        null,
       nimSum:        calcNimSum(saved.piles),
       turnCount:     saved.turnCount     || 0,
-      gameStartTime: saved.gameStartTime || Date.now(),
+      gameStartTime: Date.now(),
       countdownLeft: saved.settings?.countdownSeconds || 15,
       isAIvsAI:      saved.settings?.gameMode === 'aivai',
     });
 
-    // Bắt đầu countdown nếu có
     if (saved.settings?.countdownEnabled && saved.settings?.gameMode !== 'aivai') {
       setTimeout(() => get().startCountdown(), 100);
     }
@@ -251,7 +259,6 @@ export const useGameStore = create((set, get) => ({
 
       get().stopAIvsAI();
       get().clearCountdown();
-      clearAutoSave();
       stopBgMusic();
 
       if (settings.soundEnabled) {
@@ -263,7 +270,6 @@ export const useGameStore = create((set, get) => ({
         }
       }
 
-      // Lưu vào lịch sử ván đã hoàn thành
       saveToHistory({
         winner,
         mode:         settings.gameMode,
@@ -289,7 +295,6 @@ export const useGameStore = create((set, get) => ({
     }
 
     const nextPlayer = currentPlayer === 0 ? 1 : 0;
-
     set({
       piles:         newPiles,
       currentPlayer: nextPlayer,
@@ -297,18 +302,6 @@ export const useGameStore = create((set, get) => ({
       nimSum:        calcNimSum(newPiles),
       turnCount:     turnCount + 1,
       countdownLeft: settings.countdownSeconds,
-    });
-
-    // Tự động lưu sau mỗi nước đi
-    const newState = get();
-    autoSaveGame({
-      piles:         newPiles,
-      initialPiles:  newState.initialPiles,
-      currentPlayer: nextPlayer,
-      moveHistory:   newHistory,
-      settings,
-      turnCount:     turnCount + 1,
-      gameStartTime: newState.gameStartTime,
     });
 
     if (settings.countdownEnabled && settings.gameMode !== 'aivai') {
@@ -430,6 +423,20 @@ export const useGameStore = create((set, get) => ({
     get().clearCountdown();
     stopBgMusic();
     set({ gamePhase: 'menu' });
+  },
+
+    goToSetup: () => {
+    get().stopAIvsAI();
+    get().clearCountdown();
+    set({ gamePhase: 'setup' });
+  },
+
+    resumeGame: () => {
+    const { settings, isAIvsAI } = get();
+    set({ gamePhase: 'playing' });
+    if (settings.countdownEnabled && !isAIvsAI) {
+      setTimeout(() => get().startCountdown(), 100);
+    }
   },
 
   goToSetup:    () => set({ gamePhase: 'setup'    }),

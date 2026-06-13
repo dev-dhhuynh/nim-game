@@ -1,23 +1,97 @@
-/* ── Panel mode (trong Setup) ── */
+/* ══════════════ PANEL MODE (Setup, ngang gọn) ══════════════ */
 .panel {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 12px 14px;
+    padding: 8px 14px;
+    flex-shrink: 0;
+}
+
+.panelRow {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
-.panelTitle {
+.panelTitleInline {
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.14em;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
     color: var(--text-muted);
-    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-/* ── Popup mode (trong Game) ── */
+.content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rowIcon {
+    font-size: 0.95rem;
+}
+
+.rowLabel {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.subSection {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    transition: var(--transition);
+}
+
+.subSection.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.volumeRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.slider {
+    width: 70px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+}
+
+.slider:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.volValue {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--accent-primary);
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ══════════════ POPUP MODE (Game, dọc đầy đủ) ══════════════ */
 .popupWrapper {
     position: relative;
 }
@@ -75,15 +149,13 @@
     color: var(--accent-red);
 }
 
-/* ── Nội dung chung ── */
-.content {
+.popupContentWrap {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-/* Một dòng cài đặt */
-.row {
+.popupRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -97,12 +169,7 @@
     flex: 1;
 }
 
-.rowIcon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.rowLabel {
+.rowLabelFull {
     font-family: var(--font-body);
     font-size: 0.85rem;
     font-weight: 600;
@@ -117,8 +184,7 @@
     margin-top: 2px;
 }
 
-/* Sub section — bị mờ khi tắt master */
-.subSection {
+.popupSubSection {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -127,13 +193,12 @@
     transition: var(--transition);
 }
 
-.subSection.disabled {
+.popupSubSection.disabled {
     opacity: 0.4;
     pointer-events: none;
 }
 
-/* Thanh âm lượng */
-.volumeRow {
+.popupVolumeRow {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -145,7 +210,7 @@
     flex-shrink: 0;
 }
 
-.slider {
+.sliderFull {
     flex: 1;
     height: 4px;
     border-radius: 2px;
@@ -155,21 +220,12 @@
     accent-color: var(--accent-primary);
 }
 
-.slider:disabled {
+.sliderFull:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-.volValue {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    color: var(--accent-primary);
-    width: 32px;
-    text-align: right;
-    flex-shrink: 0;
-}
-
-/* Toggle */
+/* ══════════════ TOGGLE (chung) ══════════════ */
 .toggle {
     display: flex;
     align-items: center;
@@ -182,8 +238,8 @@
 }
 
 .toggleSlider {
-    width: 38px;
-    height: 21px;
+    width: 34px;
+    height: 19px;
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: 11px;
@@ -194,8 +250,8 @@
 .toggleSlider::after {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
+    top: 2px;
+    left: 2px;
     width: 13px;
     height: 13px;
     background: var(--text-muted);
@@ -209,7 +265,7 @@
 }
 
 .toggle input:checked+.toggleSlider::after {
-    left: 20px;
+    left: 18px;
     background: var(--accent-primary);
 }
 

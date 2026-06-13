@@ -1,5 +1,6 @@
-// Điều hướng chính
-
+// =============================================
+// APP.JS — Điều hướng chính
+// =============================================
 import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -23,7 +24,6 @@ const pageVariants = {
 const App = () => {
   const { gamePhase, settings } = useGameStore();
 
-  // Áp dụng theme khi đổi
   useEffect(() => {
     applyTheme(settings.theme || 'default');
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -41,16 +41,26 @@ const App = () => {
     }
   };
 
+  const isGameScreen  = gamePhase === 'playing' || gamePhase === 'gameover';
+  const showEffects   = isGameScreen || gamePhase === 'setup';
+
   return (
     <div
       className='bg-grid'
-      style={{ width: '100%', height: '100%', position: 'relative' }}
+      style={{
+        width:    '100%',
+        height:   '100%',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      {/* Tuyết rơi — chỉ Giáng Sinh */}
-      <SnowEffect active={settings.theme === 'christmas'} />
+      {/* Tuyết rơi — chỉ Giáng Sinh và chỉ trong game */}
+      {showEffects && (
+        <SnowEffect active={settings.theme === 'christmas'} />
+      )}
 
-      {/* Hiệu ứng theo theme — default, halloween, summer */}
-      <ThemeEffects theme={settings.theme} />
+      {/* Hiệu ứng theo theme — chỉ trong game */}
+      {showEffects && <ThemeEffects theme={settings.theme} />}
 
       {/* Nội dung app */}
       <div style={{
@@ -58,6 +68,7 @@ const App = () => {
         zIndex:   1,
         width:    '100%',
         height:   '100%',
+        overflow: 'hidden',
       }}>
         <AnimatePresence mode='wait'>
           <motion.div
@@ -71,7 +82,7 @@ const App = () => {
             animate='animate'
             exit='exit'
             transition={{ duration: 0.25 }}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%', overflow: 'hidden' }}
           >
             {renderPage()}
           </motion.div>

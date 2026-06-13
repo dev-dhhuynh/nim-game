@@ -1,9 +1,8 @@
 // Màn hình chính
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
-import { hasAutoSave } from '../utils/storage';
 import HistoryModal from '../components/HistoryModal';
 import styles from './MenuPage.module.css';
 
@@ -12,23 +11,18 @@ const MenuPage = () => {
     goToSetup,
     goToTutorial,
     goToStats,
-    continueGame,
     startGame,
     updateSettings,
+    continueFromSave,
   } = useGameStore();
 
-  const [showHistory,  setShowHistory]  = useState(false);
-  const [hasContinue,  setHasContinue]  = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  useEffect(() => {
-    setHasContinue(hasAutoSave());
-  }, []);
-
-  // Chơi lại với cùng cấu hình ván cũ
+  // Chơi lại với cùng cấu hình ván đã hoàn thành
   const handleReplay = (historyItem) => {
     if (historyItem.initialPiles) {
       updateSettings({
-        gameMode:      historyItem.mode      || 'pvp',
+        gameMode:      historyItem.mode       || 'pvp',
         aiDifficulty:  historyItem.difficulty || 'hard',
         misereVariant: historyItem.misere     || false,
         playerNames:   historyItem.playerNames || ['Người Chơi 1', 'Người Chơi 2'],
@@ -36,6 +30,11 @@ const MenuPage = () => {
       });
       startGame(historyItem.initialPiles);
     }
+  };
+
+  // Tiếp tục ván đang dở
+  const handleContinue = (saved) => {
+    continueFromSave(saved);
   };
 
   return (
@@ -82,16 +81,6 @@ const MenuPage = () => {
           ▶ Chơi Mới
         </button>
 
-        {/* Chỉ hiện khi có ván dang dở */}
-        {hasContinue && (
-          <button
-            className={`btn btn-secondary ${styles.btnMain}`}
-            onClick={continueGame}
-          >
-            ↩ Tiếp Tục
-          </button>
-        )}
-
         <button
           className={`btn btn-ghost ${styles.btnMain}`}
           onClick={() => setShowHistory(true)}
@@ -137,6 +126,7 @@ const MenuPage = () => {
           <HistoryModal
             isOpen={showHistory}
             onReplay={handleReplay}
+            onContinue={handleContinue}
             onClose={() => setShowHistory(false)}
           />
         )}

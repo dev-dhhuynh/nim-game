@@ -115,7 +115,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
         <div className={styles.filters}>
           {[
             { key: 'all',        label: `Tất cả (${history.length})`                                    },
-            { key: 'inprogress', label: `🔄 Đang dở (${history.filter(h => h.type === 'inprogress').length})` },
+            { key: 'inprogress', label: `🔄 Đã lưu (${history.filter(h => h.type === 'inprogress').length})` },
             { key: 'finished',   label: `✅ Đã xong (${history.filter(h => h.type === 'finished').length})`   },
           ].map((f) => (
             <button

@@ -441,3 +441,9 @@
     gap: 8px;
     justify-content: flex-end;
 }
+
+.presetBtn:focus,
+.diffBtn:focus,
+.modeBtn:focus {
+    outline: none;
+}

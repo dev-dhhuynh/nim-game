@@ -337,7 +337,7 @@ const SetupPage = () => {
                 </button>
               ))}
               <button
-                className={`btn btn-secondary ${styles.presetBtn}`}
+                className={`btn btn-ghost ${styles.presetBtn}`}
                 onClick={handleRandomize}
               >
                 🎲 Ngẫu nhiên

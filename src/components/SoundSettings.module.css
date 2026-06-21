@@ -97,8 +97,19 @@
 }
 
 .popupTrigger {
-    padding: 5px 10px !important;
-    font-size: 0.85rem !important;
+    padding: 6px 10px !important;
+    color: #00f5c4 !important;
+    background: rgba(0, 245, 196, 0.22) !important;
+    border: 1.5px solid #00f5c4 !important;
+    box-shadow: 0 0 10px rgba(0, 245, 196, 0.4) !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.popupTrigger:hover {
+    background: rgba(0, 245, 196, 0.35) !important;
+    box-shadow: 0 0 14px rgba(0, 245, 196, 0.6) !important;
 }
 
 .backdrop {

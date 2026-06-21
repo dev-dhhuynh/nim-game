@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { getHint } from '../utils/nimLogic';
 import { getTheme } from '../utils/themes';
+import { getGameUI } from '../utils/translations';
 import Pile from '../components/Pile';
 import PlayerPanel from '../components/PlayerPanel';
 import MoveHistory from '../components/MoveHistory';
@@ -37,6 +38,9 @@ const GamePage = () => {
     stopAIvsAI, setAIvsAISpeed,
     continueFromSave,
   } = useGameStore();
+
+  const lang = settings.language || 'vi';
+  const t    = getGameUI(lang);
 
   const [hint,          setHint]          = useState(null);
   const [showHint,      setShowHint]      = useState(false);
@@ -85,12 +89,12 @@ const GamePage = () => {
     if (moveHistory.length === 0) return;
     if (settings.soundEnabled) sounds.undo();
     undoMove();
-    toast('Đã hoàn tác nước đi', { icon: '↩' });
+    toast(t.undoToast, { icon: '↩' });
   };
 
   const handleThemeChange = (themeKey) => {
     updateSettings({ theme: themeKey });
-    toast('Đã đổi chủ đề!', { icon: '🎨' });
+    toast(t.themeToast, { icon: '🎨' });
   };
 
   const handleRestart = () => {
@@ -105,7 +109,7 @@ const GamePage = () => {
 
   // Lưu ván đang dở
   const handleSave = () => {
-    setSaveName(`Ván dở — ${new Date().toLocaleString('vi-VN')}`);
+    setSaveName(`${lang === 'vi' ? 'Ván dở' : 'Saved game'} — ${new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-US')}`);
     setShowSaveName(true);
   };
 
@@ -113,9 +117,9 @@ const GamePage = () => {
     const ok = saveCurrentGame(saveName);
     if (ok) {
       if (settings.soundEnabled) sounds.save();
-      toast.success('Đã lưu ván!');
+      toast.success(t.savedToast);
     } else {
-      toast.error('Lưu thất bại!');
+      toast.error(t.saveFailToast);
     }
     setShowSaveName(false);
   };
@@ -137,7 +141,7 @@ const GamePage = () => {
   // Tiếp tục ván dở
   const handleContinue = (saved) => {
     continueFromSave(saved);
-    toast.success('Đã tải ván!');
+    toast.success(t.continueToast);
   };
 
   const formatTime = (s) => {
@@ -180,31 +184,31 @@ const GamePage = () => {
             style={{ padding: '6px 12px', fontSize: '0.65rem' }}
             onClick={goToMenu}
           >
-            🏠 Menu
+            {t.menu}
           </button>
           <button
             className='btn btn-ghost'
             style={{ padding: '6px 12px', fontSize: '0.65rem' }}
             onClick={goToSetup}
           >
-            ← Thiết lập
+            {t.setup}
           </button>
         </div>
 
         <div className={styles.gameInfo}>
           <span className='badge badge-primary'>
-            {settings.gameMode === 'pvp'   && 'Người vs Người'}
-            {settings.gameMode === 'pvc'   && `vs AI · ${settings.aiDifficulty}`}
-            {settings.gameMode === 'aivai' && '🤖 Máy vs Máy'}
+            {settings.gameMode === 'pvp'   && t.modePvp}
+            {settings.gameMode === 'pvc'   && `${t.modePvcPrefix}${settings.aiDifficulty}`}
+            {settings.gameMode === 'aivai' && t.modeAivai}
           </span>
           {settings.misereVariant && (
-            <span className='badge badge-red'>Misère</span>
+            <span className='badge badge-red'>{t.misereBadge}</span>
           )}
           <span className={styles.timer}>
             ⏱ {formatTime(elapsedTime)}
           </span>
           <span className={styles.turnLabel}>
-            Lượt #{turnCount + 1}
+            {t.turnLabel}{turnCount + 1}
           </span>
           {settings.countdownEnabled && !isAIvsAI && gamePhase === 'playing' && (
             <motion.span
@@ -233,7 +237,7 @@ const GamePage = () => {
               style={{ padding: '5px 10px', fontSize: '0.65rem' }}
               onClick={handleSave}
             >
-              💾 Lưu
+              {t.save}
             </button>
           )}
 
@@ -242,7 +246,7 @@ const GamePage = () => {
             style={{ padding: '5px 10px', fontSize: '0.65rem' }}
             onClick={() => setShowHistory(true)}
           >
-            📁 Lịch sử
+            {t.historyBtn}
           </button>
 
           {!isAIvsAI && (
@@ -252,7 +256,7 @@ const GamePage = () => {
               onClick={handleUndo}
               disabled={moveHistory.length === 0}
             >
-              ↩ Undo
+              {t.undo}
             </button>
           )}
         </div>
@@ -275,7 +279,7 @@ const GamePage = () => {
               exit={{ scale: 0.9,    y: -20 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <p className={styles.savePopupTitle}>💾 Đặt tên cho ván</p>
+              <p className={styles.savePopupTitle}>{t.saveTitle}</p>
               <input
                 className={styles.saveInput}
                 value={saveName}
@@ -293,14 +297,14 @@ const GamePage = () => {
                   style={{ fontSize: '0.72rem' }}
                   onClick={() => setShowSaveName(false)}
                 >
-                  Hủy
+                  {t.saveCancel}
                 </button>
                 <button
                   className='btn btn-primary'
                   style={{ fontSize: '0.72rem' }}
                   onClick={handleConfirmSave}
                 >
-                  💾 Lưu
+                  {t.saveConfirm}
                 </button>
               </div>
             </motion.div>
@@ -346,7 +350,7 @@ const GamePage = () => {
           {/* Nim-Sum */}
           <div className={styles.nimBox}>
             <div className={styles.nimRow}>
-              <span className={styles.nimLabel}>Nim-Sum (XOR)</span>
+              <span className={styles.nimLabel}>{t.nimSumTitle}</span>
               <span className={`
                 ${styles.nimVal}
                 ${nimSum === 0 ? styles.nimZero : styles.nimNonzero}
@@ -355,9 +359,7 @@ const GamePage = () => {
               </span>
             </div>
             <p className={styles.nimHint}>
-              {nimSum === 0
-                ? '⚠️ Thế thua — không có nước thắng'
-                : '✅ Có nước đi thắng tồn tại'}
+              {nimSum === 0 ? t.nimSumLose : t.nimSumWin}
             </p>
           </div>
 
@@ -393,11 +395,11 @@ const GamePage = () => {
                   transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                   style={{ display: 'inline-block' }}
                 >⟳</motion.span>
-                &nbsp;{getName(currentPlayer)} đang suy nghĩ...
+                &nbsp;{getName(currentPlayer)}{t.thinking}
               </span>
             ) : (
               <span>
-                Lượt của{' '}
+                {t.turnOf}{' '}
                 <strong style={{
                   color: currentPlayer === 0
                     ? 'var(--accent-primary)'
@@ -438,7 +440,9 @@ const GamePage = () => {
                 animate={{ opacity: 1, y:  0 }}
                 exit={{    opacity: 0, y: -8 }}
               >
-                {hint.message}
+                {hint.type === 'winning'
+                  ? `${t.hintWinPrefix} ${hint.move.removeCount} ${t.hintWinMid} ${hint.move.pileIndex + 1}`
+                  : t.hintLose}
               </motion.div>
             )}
           </AnimatePresence>
@@ -450,14 +454,14 @@ const GamePage = () => {
                 style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleHint}
               >
-                💡 Gợi ý
+                {t.hint}
               </button>
               <button
                 className='btn btn-ghost'
                 style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleRestart}
               >
-                ↺ Chơi lại
+                {t.restart}
               </button>
             </div>
           )}
@@ -469,7 +473,7 @@ const GamePage = () => {
                 style={{ fontSize: '0.72rem', ...(hasBgImage ? btnOnBg : {}) }}
                 onClick={handleAIvsAIReset}
               >
-                ↺ Ván mới
+                {t.newMatch}
               </button>
             </div>
           )}
@@ -484,7 +488,7 @@ const GamePage = () => {
             playerNames={settings.playerNames}
             settings={settings}
             onRestart={handleRestart}
-            onMenu={goToSetup}
+            onMenu={goToMenu}
           />
         )}
       </AnimatePresence>

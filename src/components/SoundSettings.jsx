@@ -4,9 +4,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSoundConfig, updateSoundConfig, playPickSound } from '../utils/soundManager';
+import { useGameStore } from '../store/gameStore';
+import { getSoundUI } from '../utils/translations';
 import styles from './SoundSettings.module.css';
 
 const SoundSettings = ({ mode = 'panel' }) => {
+  const { settings: globalSettings } = useGameStore();
+  const lang = globalSettings.language || 'vi';
+  const t    = getSoundUI(lang);
+
   const [isOpen, setIsOpen] = useState(mode === 'panel');
   const [config, setConfig] = useState(getSoundConfig());
 
@@ -32,7 +38,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
       {/* Bật/tắt tất cả */}
       <div className={styles.row}>
         <span className={styles.rowIcon}>🔊</span>
-        <span className={styles.rowLabel}>Âm thanh</span>
+        <span className={styles.rowLabel}>{t.soundLabel}</span>
         <label className={styles.toggle}>
           <input
             type='checkbox'
@@ -48,7 +54,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
         {/* Nhạc nền */}
         <div className={styles.row}>
           <span className={styles.rowIcon}>🎵</span>
-          <span className={styles.rowLabel}>Nhạc</span>
+          <span className={styles.rowLabel}>{t.musicLabel}</span>
           <label className={styles.toggle}>
             <input
               type='checkbox'
@@ -78,7 +84,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
         {/* Hiệu ứng âm thanh */}
         <div className={styles.row}>
           <span className={styles.rowIcon}>🖱️</span>
-          <span className={styles.rowLabel}>Hiệu ứng</span>
+          <span className={styles.rowLabel}>{t.sfxLabel}</span>
           <label className={styles.toggle}>
             <input
               type='checkbox'
@@ -117,8 +123,8 @@ const SoundSettings = ({ mode = 'panel' }) => {
         <div className={styles.rowLeft}>
           <span className={styles.rowIcon}>🔊</span>
           <div>
-            <p className={styles.rowLabelFull}>Toàn bộ âm thanh</p>
-            <p className={styles.rowDesc}>Bật/tắt tất cả âm thanh</p>
+            <p className={styles.rowLabelFull}>{t.masterTitle}</p>
+            <p className={styles.rowDesc}>{t.masterDesc}</p>
           </div>
         </div>
         <label className={styles.toggle}>
@@ -137,8 +143,8 @@ const SoundSettings = ({ mode = 'panel' }) => {
           <div className={styles.rowLeft}>
             <span className={styles.rowIcon}>🎵</span>
             <div>
-              <p className={styles.rowLabelFull}>Nhạc nền</p>
-              <p className={styles.rowDesc}>Nhạc theo từng chủ đề</p>
+              <p className={styles.rowLabelFull}>{t.musicTitle}</p>
+              <p className={styles.rowDesc}>{t.musicDesc}</p>
             </div>
           </div>
           <label className={styles.toggle}>
@@ -178,8 +184,8 @@ const SoundSettings = ({ mode = 'panel' }) => {
           <div className={styles.rowLeft}>
             <span className={styles.rowIcon}>🖱️</span>
             <div>
-              <p className={styles.rowLabelFull}>Hiệu ứng âm thanh</p>
-              <p className={styles.rowDesc}>Tiếng click, thắng, thua</p>
+              <p className={styles.rowLabelFull}>{t.sfxTitle}</p>
+              <p className={styles.rowDesc}>{t.sfxDesc}</p>
             </div>
           </div>
           <label className={styles.toggle}>
@@ -224,7 +230,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
     return (
       <div className={styles.panel}>
         <div className={styles.panelRow}>
-          <span className={styles.panelTitleInline}>🎵 ÂM THANH</span>
+          <span className={styles.panelTitleInline}>{t.panelTitle}</span>
           {panelContent}
         </div>
       </div>
@@ -237,7 +243,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
       <button
         className={`btn btn-ghost ${styles.popupTrigger}`}
         onClick={() => setIsOpen(!isOpen)}
-        title='Cài đặt âm thanh'
+        title={t.triggerTooltip}
       >
         {config.masterEnabled ? '🎵' : '🔇'}
       </button>
@@ -257,7 +263,7 @@ const SoundSettings = ({ mode = 'panel' }) => {
               transition={{ duration: 0.15 }}
             >
               <div className={styles.popupHeader}>
-                <span className={styles.popupTitle}>🎵 Âm Thanh</span>
+                <span className={styles.popupTitle}>{t.popupTitle}</span>
                 <button
                   className={styles.closeBtn}
                   onClick={() => setIsOpen(false)}

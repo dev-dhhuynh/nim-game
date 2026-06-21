@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { PRESETS, generateRandomPiles } from '../utils/nimLogic';
+import { getSetupUI } from '../utils/translations';
 import ThemeSelector from '../components/ThemeSelector';
 import HistoryModal from '../components/HistoryModal';
 import SoundSettings from '../components/SoundSettings';
@@ -17,7 +18,11 @@ const SetupPage = () => {
     piles, turnCount, moveHistory,
   } = useGameStore();
 
+  const lang = settings.language || 'vi';
+  const t    = getSetupUI(lang);
+
   const [localPiles,       setLocalPiles]       = useState([3, 5, 7]);
+  const [activePreset,     setActivePreset]     = useState('classic');
   const [playerNames,      setPlayerNames]      = useState([...settings.playerNames]);
   const [aiName,           setAiName]           = useState(settings.aiName);
   const [ai1Name,          setAi1Name]          = useState(settings.ai1Name);
@@ -38,17 +43,28 @@ const SetupPage = () => {
     piles.some((p) => p > 0) &&
     moveHistory.length > 0;
 
-  const handleRandomize = () => setLocalPiles(generateRandomPiles(3, 5, 10));
+  const handleRandomize = () => {
+    setLocalPiles(generateRandomPiles(3, 5, 10));
+    setActivePreset('random');
+  };
 
-  const handlePreset = (key) => setLocalPiles([...PRESETS[key].piles]);
+  const handlePreset = (key) => {
+    setLocalPiles([...PRESETS[key].piles]);
+    setActivePreset(key);
+  };
 
   const addPile = () => {
-    if (localPiles.length < 6) setLocalPiles([...localPiles, 3]);
+    if (localPiles.length < 6) {
+      setLocalPiles([...localPiles, 3]);
+      setActivePreset(null);
+    }
   };
 
   const removePile = (i) => {
-    if (localPiles.length > 2)
+    if (localPiles.length > 2) {
       setLocalPiles(localPiles.filter((_, idx) => idx !== i));
+      setActivePreset(null);
+    }
   };
 
   const changePile = (i, val) => {
@@ -56,6 +72,7 @@ const SetupPage = () => {
     const next = [...localPiles];
     next[i]    = v;
     setLocalPiles(next);
+    setActivePreset(null);
   };
 
   const doStartGame = () => {
@@ -100,9 +117,9 @@ const SetupPage = () => {
   const DifficultyPicker = ({ value, onChange }) => (
     <div className={styles.diffBtns}>
       {[
-        { key: 'easy',   label: 'Dễ',  color: '#00f5c4' },
-        { key: 'medium', label: 'Vừa', color: '#f5c400' },
-        { key: 'hard',   label: 'Khó', color: '#ff4571' },
+        { key: 'easy',   label: t.diffEasy,   color: '#00f5c4' },
+        { key: 'medium', label: t.diffMedium, color: '#f5c400' },
+        { key: 'hard',   label: t.diffHard,   color: '#ff4571' },
       ].map((d) => (
         <button
           key={d.key}
@@ -132,16 +149,16 @@ const SetupPage = () => {
             style={{ padding: '6px 12px', fontSize: '0.7rem' }}
             onClick={goToMenu}
           >
-            🏠 Menu
+            {t.menu}
           </button>
-          <h2 className={styles.title}>THIẾT LẬP GAME</h2>
+          <h2 className={styles.title}>{t.title}</h2>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               className='btn btn-ghost'
               style={{ padding: '6px 12px', fontSize: '0.7rem' }}
               onClick={() => setShowHistoryModal(true)}
             >
-              📁 Lịch Sử Đấu
+              {t.historyBtn}
             </button>
             <ThemeSelector
               currentTheme={settings.theme}
@@ -155,25 +172,25 @@ const SetupPage = () => {
           {/* ── CỘT TRÁI ── */}
           <div className={styles.section}>
 
-            <p className={styles.sectionTitle}>⚔ CHẾ ĐỘ CHƠI</p>
+            <p className={styles.sectionTitle}>{t.gameMode}</p>
             <div className={styles.modeButtons}>
               <button
                 className={`${styles.modeBtn} ${mode === 'pvp' ? styles.modeActive : ''}`}
                 onClick={() => setMode('pvp')}
               >
-                <span>👥</span><span>Người vs Người</span>
+                <span>👥</span><span>{t.modePvp}</span>
               </button>
               <button
                 className={`${styles.modeBtn} ${mode === 'pvc' ? styles.modeActive : ''}`}
                 onClick={() => setMode('pvc')}
               >
-                <span>🤖</span><span>Người vs Máy</span>
+                <span>🤖</span><span>{t.modePvc}</span>
               </button>
               <button
                 className={`${styles.modeBtn} ${mode === 'aivai' ? styles.modeActive : ''}`}
                 onClick={() => setMode('aivai')}
               >
-                <span>🤖🤖</span><span>Máy vs Máy</span>
+                <span>🤖🤖</span><span>{t.modeAivai}</span>
               </button>
             </div>
 
@@ -186,7 +203,7 @@ const SetupPage = () => {
               {mode === 'pvp' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                    👤 TÊN NGƯỜI CHƠI
+                    {t.playerNames}
                   </p>
                   <div className={styles.nameInputs}>
                     <div className={styles.nameRow}>
@@ -210,26 +227,26 @@ const SetupPage = () => {
               {mode === 'pvc' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                    👤 TÊN NGƯỜI CHƠI
+                    {t.playerNames}
                   </p>
                   <div className={styles.nameInputs}>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
-                        style={{ color: 'var(--accent-primary)' }}>Bạn</span>
+                        style={{ color: 'var(--accent-primary)' }}>{t.you}</span>
                       <input className={styles.input} value={playerNames[0]}
                         maxLength={16}
                         onChange={(e) => setPlayerNames([e.target.value, playerNames[1]])} />
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
-                        style={{ color: 'var(--accent-red)' }}>AI</span>
+                        style={{ color: 'var(--accent-red)' }}>{t.ai}</span>
                       <input className={styles.input} value={aiName}
                         maxLength={16}
                         onChange={(e) => setAiName(e.target.value)} />
                     </div>
                   </div>
                   <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                    🧠 ĐỘ KHÓ AI
+                    {t.aiDifficulty}
                   </p>
                   <DifficultyPicker value={difficulty} onChange={setDifficulty} />
                 </>
@@ -238,32 +255,32 @@ const SetupPage = () => {
               {mode === 'aivai' && (
                 <>
                   <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                    🤖 CẤU HÌNH HAI BOT
+                    {t.botConfig}
                   </p>
                   <div className={styles.botCard}>
                     <div className={styles.botHeader}>
-                      <span style={{ color: 'var(--accent-primary)' }}>◆ Bot 1</span>
+                      <span style={{ color: 'var(--accent-primary)' }}>{t.bot1}</span>
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
-                        style={{ color: 'var(--accent-primary)' }}>Tên</span>
+                        style={{ color: 'var(--accent-primary)' }}>{t.nameLabel}</span>
                       <input className={styles.input} value={ai1Name}
                         maxLength={16} onChange={(e) => setAi1Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>Độ khó</p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>{t.difficultyLabel}</p>
                     <DifficultyPicker value={ai1Diff} onChange={setAi1Diff} />
                   </div>
                   <div className={styles.botCard} style={{ marginTop: 8 }}>
                     <div className={styles.botHeader}>
-                      <span style={{ color: 'var(--accent-gold)' }}>◆ Bot 2</span>
+                      <span style={{ color: 'var(--accent-gold)' }}>{t.bot2}</span>
                     </div>
                     <div className={styles.nameRow}>
                       <span className={styles.nameLabel}
-                        style={{ color: 'var(--accent-gold)' }}>Tên</span>
+                        style={{ color: 'var(--accent-gold)' }}>{t.nameLabel}</span>
                       <input className={styles.input} value={ai2Name}
                         maxLength={16} onChange={(e) => setAi2Name(e.target.value)} />
                     </div>
-                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>Độ khó</p>
+                    <p className={styles.sectionTitle} style={{ marginTop: 6 }}>{t.difficultyLabel}</p>
                     <DifficultyPicker value={ai2Diff} onChange={setAi2Diff} />
                   </div>
                 </>
@@ -274,26 +291,26 @@ const SetupPage = () => {
             <div className={styles.variantRow}>
               <div>
                 <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                  🔀 BIẾN THỂ
+                  {t.variant}
                 </p>
                 <label className={styles.toggle}>
                   <input type='checkbox' checked={misere}
                     onChange={(e) => setMisere(e.target.checked)} />
                   <span className={styles.toggleSlider} />
-                  <span>Misère — que cuối <strong>thua</strong></span>
+                  <span>{t.misereLabel1}<strong>{t.misereStrong}</strong></span>
                 </label>
               </div>
 
               <div>
                 <p className={styles.sectionTitle} style={{ marginTop: 10 }}>
-                  ⏱ ĐẾM NGƯỢC
+                  {t.countdownTitle}
                 </p>
                 <label className={styles.toggle}>
                   <input type='checkbox' checked={countdown}
                     onChange={(e) => setCountdown(e.target.checked)}
                     disabled={mode === 'aivai'} />
                   <span className={styles.toggleSlider} />
-                  <span>Giới hạn thời gian/lượt</span>
+                  <span>{t.countdownLabel}</span>
                 </label>
               </div>
             </div>
@@ -324,23 +341,23 @@ const SetupPage = () => {
           {/* ── CỘT PHẢI ── */}
           <div className={styles.section}>
 
-            <p className={styles.sectionTitle}>🪵 CẤU HÌNH HÀNG QUE</p>
+            <p className={styles.sectionTitle}>{t.pilesConfig}</p>
 
             <div className={styles.presets}>
               {Object.entries(PRESETS).map(([key, preset]) => (
                 <button
                   key={key}
-                  className={`btn btn-ghost ${styles.presetBtn}`}
+                  className={`btn btn-ghost ${styles.presetBtn} ${activePreset === key ? styles.presetActive : ''}`}
                   onClick={() => handlePreset(key)}
                 >
-                  {preset.label}
+                  {t.presets[key] || preset.label}
                 </button>
               ))}
               <button
-                className={`btn btn-ghost ${styles.presetBtn}`}
+                className={`btn btn-ghost ${styles.presetBtn} ${activePreset === 'random' ? styles.presetActive : ''}`}
                 onClick={handleRandomize}
               >
-                🎲 Ngẫu nhiên
+                {t.randomBtn}
               </button>
             </div>
 
@@ -353,7 +370,7 @@ const SetupPage = () => {
                   animate={{ opacity: 1,  x:   0 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <span className={styles.pileLabel}>Hàng {i + 1}</span>
+                  <span className={styles.pileLabel}>{t.rowLabel} {i + 1}</span>
                   <div className={styles.pileControl}>
                     <button className={styles.pileBtn}
                       onClick={() => changePile(i, count - 1)}>−</button>
@@ -383,7 +400,7 @@ const SetupPage = () => {
                 className={`btn btn-ghost ${styles.addBtn}`}
                 onClick={addPile}
               >
-                + Thêm hàng
+                {t.addRow}
               </button>
             )}
 
@@ -401,14 +418,14 @@ const SetupPage = () => {
               style={{ padding: '10px 24px', fontSize: '0.8rem' }}
               onClick={resumeGame}
             >
-              ↩ Quay Lại Trận (Lượt #{turnCount + 1})
+              {t.resumeBtn}{turnCount + 1})
             </button>
           )}
           <button
             className={`btn btn-primary ${styles.startBtn}`}
             onClick={handleStart}
           >
-            ▶ BẮT ĐẦU GAME
+            {t.startBtn}
           </button>
         </div>
 
@@ -442,10 +459,10 @@ const SetupPage = () => {
               exit={{ scale: 0.9,    y: -20 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <p className={styles.confirmTitle}>⚠️ Bắt đầu ván mới?</p>
+              <p className={styles.confirmTitle}>{t.confirmTitle}</p>
               <p className={styles.confirmDesc}>
-                Bạn đang có một trận chưa kết thúc (Lượt #{turnCount + 1}).
-                Bắt đầu ván mới sẽ <strong>hủy tiến trình hiện tại</strong> nếu chưa lưu.
+                {t.confirmDesc1}{turnCount + 1}{t.confirmDesc2}
+                <strong>{t.confirmDescStrong}</strong>{t.confirmDescEnd}
               </p>
               <div className={styles.confirmActions}>
                 <button
@@ -453,7 +470,7 @@ const SetupPage = () => {
                   style={{ fontSize: '0.75rem' }}
                   onClick={() => setShowConfirmNew(false)}
                 >
-                  Hủy
+                  {t.cancel}
                 </button>
                 <button
                   className='btn btn-danger'
@@ -463,7 +480,7 @@ const SetupPage = () => {
                     doStartGame();
                   }}
                 >
-                  ▶ Bắt Đầu Ván Mới
+                  {t.confirmNewGame}
                 </button>
               </div>
             </motion.div>

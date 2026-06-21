@@ -4,9 +4,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getHistory, clearHistory, deleteHistoryById } from '../utils/storage';
+import { useGameStore } from '../store/gameStore';
+import { getHistoryUI } from '../utils/translations';
 import styles from './HistoryModal.module.css';
 
 const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
+  const { settings } = useGameStore();
+  const lang = settings.language || 'vi';
+  const t    = getHistoryUI(lang);
+
   const [history,       setHistory]       = useState([]);
   const [filter,        setFilter]        = useState('all'); // all | inprogress | finished
   const [confirmClear,  setConfirmClear]  = useState(false);
@@ -33,21 +39,21 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
     if (!s) return '0s';
     const m = Math.floor(s / 60);
     const r = s % 60;
-    return m > 0 ? `${m}p${r > 0 ? ` ${r}s` : ''}` : `${r}s`;
+    return m > 0 ? `${m}${lang === 'vi' ? 'p' : 'm'}${r > 0 ? ` ${r}s` : ''}` : `${r}s`;
   };
 
   // Tên chế độ
   const getModeName = (mode) => {
-    if (mode === 'pvp')   return '👥 PvP';
-    if (mode === 'pvc')   return '🤖 vs AI';
-    if (mode === 'aivai') return '🤖🤖 AI vs AI';
+    if (mode === 'pvp')   return t.modePvp;
+    if (mode === 'pvc')   return t.modePvc;
+    if (mode === 'aivai') return t.modeAivai;
     return mode || '—';
   };
 
   // Tên người thắng
   const getWinnerName = (h) => {
-    if (h.mode === 'aivai') return h.winner === 0 ? 'Bot 1' : 'Bot 2';
-    if (h.mode === 'pvc')   return h.winner === 0 ? '👤 Bạn' : '🤖 Máy';
+    if (h.mode === 'aivai') return h.winner === 0 ? t.bot1 : t.bot2;
+    if (h.mode === 'pvc')   return h.winner === 0 ? t.you : t.ai;
     const names = h.playerNames || ['P1', 'P2'];
     return h.winner === 0 ? names[0] : names[1];
   };
@@ -97,7 +103,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
 
         {/* Header */}
         <div className={styles.header}>
-          <h3 className={styles.title}>📁 Lịch Sử Đấu</h3>
+          <h3 className={styles.title}>{t.title}</h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               className={`btn ${confirmClear ? 'btn-danger' : 'btn-ghost'}`}
@@ -105,7 +111,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
               onClick={handleClearAll}
               disabled={history.length === 0}
             >
-              {confirmClear ? '⚠ Xác nhận?' : '🗑 Xóa tất cả'}
+              {confirmClear ? t.confirmClear : t.clearAll}
             </button>
             <button className={styles.closeBtn} onClick={onClose}>✕</button>
           </div>
@@ -114,9 +120,9 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
         {/* Bộ lọc */}
         <div className={styles.filters}>
           {[
-            { key: 'all',        label: `Tất cả (${history.length})`                                    },
-            { key: 'inprogress', label: `🔄 Đã lưu (${history.filter(h => h.type === 'inprogress').length})` },
-            { key: 'finished',   label: `✅ Đã xong (${history.filter(h => h.type === 'finished').length})`   },
+            { key: 'all',        label: `${t.filterAll} (${history.length})`                                    },
+            { key: 'inprogress', label: `${t.filterInProgress} (${history.filter(h => h.type === 'inprogress').length})` },
+            { key: 'finished',   label: `${t.filterFinished} (${history.filter(h => h.type === 'finished').length})`   },
           ].map((f) => (
             <button
               key={f.key}
@@ -138,11 +144,11 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                 animate={{ opacity: 1 }}
               >
                 <span className={styles.emptyIcon}>📭</span>
-                <p>Chưa có ván nào</p>
+                <p>{t.emptyTitle}</p>
                 <p className={styles.emptyNote}>
                   {filter === 'inprogress'
-                    ? 'Ấn 💾 trong game để lưu ván đang dở'
-                    : 'Chơi xong một ván sẽ tự động lưu vào đây'}
+                    ? t.emptyInProgress
+                    : t.emptyFinished}
                 </p>
               </motion.div>
             ) : (
@@ -158,9 +164,9 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                   {/* Badge loại ván */}
                   <div className={styles.typeBadge}>
                     {h.type === 'inprogress' ? (
-                      <span className={styles.badgeInProgress}>🔄 Đang dở</span>
+                      <span className={styles.badgeInProgress}>{t.badgeInProgress}</span>
                     ) : (
-                      <span className={styles.badgeFinished}>✅ Đã xong</span>
+                      <span className={styles.badgeFinished}>{t.badgeFinished}</span>
                     )}
                   </div>
 
@@ -171,7 +177,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                       <div className={styles.saveMeta}>
                         <span>{getModeName(h.settings?.gameMode)}</span>
                         <span className={styles.dot}>·</span>
-                        <span>Lượt {h.turnCount || 0}</span>
+                        <span>{t.turnLabel} {h.turnCount || 0}</span>
                         <span className={styles.dot}>·</span>
                         <span>{formatDate(h.savedAt)}</span>
                       </div>
@@ -185,9 +191,9 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                         `}>
                           {getWinnerName(h)}
                         </span>
-                        <span className={styles.winLabel}>thắng</span>
+                        <span className={styles.winLabel}>{t.won}</span>
                         {h.endReason === 'timeout' && (
-                          <span className={styles.timeoutBadge}>⏱ Hết giờ</span>
+                          <span className={styles.timeoutBadge}>{t.timeout}</span>
                         )}
                       </div>
                       <div className={styles.saveMeta}>
@@ -196,7 +202,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                           <span className={styles.diff}>{h.difficulty}</span>
                         )}
                         <span className={styles.dot}>·</span>
-                        <span>{h.turns || 0} lượt</span>
+                        <span>{h.turns || 0} {t.turns}</span>
                         <span className={styles.dot}>·</span>
                         <span>{formatDuration(h.duration)}</span>
                         <span className={styles.dot}>·</span>
@@ -225,7 +231,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                           onClose();
                         }}
                       >
-                        ▶ Tiếp tục
+                        {t.continueBtn}
                       </button>
                     ) : (
                       h.initialPiles && (
@@ -237,7 +243,7 @@ const HistoryModal = ({ isOpen, onReplay, onContinue, onClose }) => {
                             onClose();
                           }}
                         >
-                          ↺ Chơi lại
+                          {t.replayBtn}
                         </button>
                       )
                     )}

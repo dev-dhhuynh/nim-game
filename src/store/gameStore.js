@@ -40,6 +40,7 @@ const DEFAULT_SETTINGS = {
   ai2Name:          'Bot Beta',
   countdownEnabled: false,
   countdownSeconds: 15,
+  language: 'vi',
 };
 
 const savedSettings = loadSettings();

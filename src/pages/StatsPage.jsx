@@ -4,10 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { getHistory, clearHistory } from '../utils/storage';
+import { getStatsUI } from '../utils/translations';
 import styles from './StatsPage.module.css';
 
 const StatsPage = () => {
-  const { goToMenu } = useGameStore();
+  const { goToMenu, settings } = useGameStore();
+  const lang = settings.language || 'vi';
+  const t    = getStatsUI(lang);
+
   const [history,    setHistory]    = useState([]);
   const [filter,     setFilter]     = useState('all'); // 'all' | 'pvp' | 'pvc' | 'aivai'
   const [confirmClear, setConfirmClear] = useState(false);
@@ -58,7 +62,7 @@ const StatsPage = () => {
     if (s < 60)  return `${s}s`;
     const m = Math.floor(s / 60);
     const r = s % 60;
-    return `${m}p${r > 0 ? ` ${r}s` : ''}`;
+    return `${m}${lang === 'vi' ? 'p' : 'm'}${r > 0 ? ` ${r}s` : ''}`;
   };
 
   // Format ngày
@@ -69,17 +73,17 @@ const StatsPage = () => {
 
   // Tên chế độ
   const getModeName = (mode) => {
-    if (mode === 'pvp')   return 'Người vs Người';
-    if (mode === 'pvc')   return 'vs Máy';
-    if (mode === 'aivai') return 'Máy vs Máy';
+    if (mode === 'pvp')   return t.modePvp;
+    if (mode === 'pvc')   return t.modePvc;
+    if (mode === 'aivai') return t.modeAivai;
     return mode;
   };
 
   // Tên người thắng
   const getWinnerName = (h) => {
-    if (h.mode === 'aivai') return h.winner === 0 ? 'Bot 1' : 'Bot 2';
-    if (h.mode === 'pvc')   return h.winner === 0 ? '👤 Bạn' : '🤖 Máy';
-    return h.winner === 0 ? '👤 P1' : '👤 P2';
+    if (h.mode === 'aivai') return h.winner === 0 ? t.bot1 : t.bot2;
+    if (h.mode === 'pvc')   return h.winner === 0 ? t.you : t.ai;
+    return h.winner === 0 ? t.p1 : t.p2;
   };
 
   return (
@@ -93,26 +97,26 @@ const StatsPage = () => {
             style={{ padding: '6px 12px', fontSize: '0.7rem' }}
             onClick={goToMenu}
           >
-            ← Quay lại
+            {t.back}
           </button>
-          <h2 className={styles.title}>THỐNG KÊ</h2>
+          <h2 className={styles.title}>{t.title}</h2>
           <button
             className={`btn ${confirmClear ? 'btn-danger' : 'btn-ghost'}`}
             style={{ padding: '6px 12px', fontSize: '0.7rem' }}
             onClick={handleClear}
             disabled={history.length === 0}
           >
-            {confirmClear ? '⚠️ Xác nhận xóa?' : '🗑 Xóa lịch sử'}
+            {confirmClear ? t.confirmClear : t.clearHistory}
           </button>
         </div>
 
         {/* Bộ lọc */}
         <div className={styles.filters}>
           {[
-            { key: 'all',   label: 'Tất cả'         },
-            { key: 'pvp',   label: '👥 Người vs Người' },
-            { key: 'pvc',   label: '🤖 vs Máy'        },
-            { key: 'aivai', label: '🤖🤖 Máy vs Máy'  },
+            { key: 'all',   label: t.filterAll   },
+            { key: 'pvp',   label: t.filterPvp   },
+            { key: 'pvc',   label: t.filterPvc   },
+            { key: 'aivai', label: t.filterAivai },
           ].map((f) => (
             <button
               key={f.key}
@@ -136,7 +140,7 @@ const StatsPage = () => {
             transition={{ delay: 0.05 }}
           >
             <span className={styles.statValue}>{totalGames}</span>
-            <span className={styles.statLabel}>Ván đã chơi</span>
+            <span className={styles.statLabel}>{t.gamesPlayed}</span>
           </motion.div>
 
           {winRate !== null && (
@@ -149,7 +153,7 @@ const StatsPage = () => {
               <span className={`${styles.statValue} ${styles.statGreen}`}>
                 {winRate}%
               </span>
-              <span className={styles.statLabel}>Tỉ lệ thắng</span>
+              <span className={styles.statLabel}>{t.winRate}</span>
             </motion.div>
           )}
 
@@ -160,7 +164,7 @@ const StatsPage = () => {
             transition={{ delay: 0.15 }}
           >
             <span className={styles.statValue}>{avgTurns}</span>
-            <span className={styles.statLabel}>Lượt trung bình</span>
+            <span className={styles.statLabel}>{t.avgTurns}</span>
           </motion.div>
 
           <motion.div
@@ -170,14 +174,14 @@ const StatsPage = () => {
             transition={{ delay: 0.2 }}
           >
             <span className={styles.statValue}>{formatTime(avgTime)}</span>
-            <span className={styles.statLabel}>Thời gian TB</span>
+            <span className={styles.statLabel}>{t.avgTime}</span>
           </motion.div>
         </div>
 
         {/* Danh sách ván */}
         <div className={styles.listHeader}>
-          <span>LỊCH SỬ VÁN ĐÃ CHƠI</span>
-          <span>{filtered.length} ván</span>
+          <span>{t.listHeader}</span>
+          <span>{filtered.length} {t.matchesSuffix}</span>
         </div>
 
         <div className={styles.list}>
@@ -189,9 +193,9 @@ const StatsPage = () => {
                 animate={{ opacity: 1 }}
               >
                 <span className={styles.emptyIcon}>📭</span>
-                <p>Chưa có ván nào được ghi lại</p>
+                <p>{t.emptyTitle}</p>
                 <p className={styles.emptyNote}>
-                  Chơi xong một ván sẽ tự động lưu vào đây
+                  {t.emptyNote}
                 </p>
               </motion.div>
             ) : (
@@ -213,7 +217,7 @@ const StatsPage = () => {
                     `}>
                       {getWinnerName(h)}
                     </span>
-                    <span className={styles.winnerLabel}>thắng</span>
+                    <span className={styles.winnerLabel}>{t.won}</span>
                   </div>
 
                   {/* Thông tin ván */}
@@ -231,7 +235,7 @@ const StatsPage = () => {
 
                   {/* Số liệu */}
                   <div className={styles.itemStats}>
-                    <span>{h.turns || '—'} lượt</span>
+                    <span>{h.turns || '—'} {t.turnsSuffix}</span>
                     <span className={styles.dot}>·</span>
                     <span>{formatTime(h.duration || 0)}</span>
                   </div>

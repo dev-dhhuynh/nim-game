@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { getGameOverUI } from '../utils/translations';
 import styles from './GameOverModal.module.css';
 
 const GameOverModal = ({
@@ -11,6 +12,9 @@ const GameOverModal = ({
   onRestart,    // hàm chơi lại
   onMenu,       // hàm về menu
 }) => {
+
+  const lang = settings.language || 'vi';
+  const t    = getGameOverUI(lang);
 
   // Lấy tên người thắng — xử lý đủ cả pvp, pvc, aivai
   const getName = (idx) => {
@@ -54,7 +58,7 @@ const GameOverModal = ({
         {/* Kết quả */}
         <div className={styles.result}>
           <p className={styles.label}>
-            {isAIWon ? 'MÁY THẮNG' : isAIvsAI ? 'BOT THẮNG' : 'NGƯỜI THẮNG'}
+            {isAIWon ? t.aiWonLabel : isAIvsAI ? t.botWonLabel : t.humanWonLabel}
           </p>
           <p className={`${styles.winnerName} ${isAIWon ? styles.aiWin : styles.humanWin}`}>
             {winnerName}
@@ -64,19 +68,19 @@ const GameOverModal = ({
         {/* Lời nhắn */}
         <p className={styles.message}>
           {isAIWon
-            ? 'AI đã tính toán hoàn hảo! Thử lại nhé.'
+            ? t.aiWonMsg
             : isAIvsAI
-            ? `${winnerName} đã chiến thắng! Xem lại nước đi để học chiến thuật.`
-            : `Chúc mừng ${winnerName}! Chiến lược xuất sắc!`}
+            ? `${winnerName}${t.aivaiMsg2}`
+            : `${t.humanMsg1}${winnerName}${t.humanMsg2}`}
         </p>
 
         {/* Nút hành động */}
         <div className={styles.actions}>
           <button className='btn btn-primary' onClick={onRestart}>
-            ↺ Chơi Lại
+            {t.playAgain}
           </button>
           <button className='btn btn-ghost' onClick={onMenu}>
-            ⌂ Menu
+            {t.menu}
           </button>
         </div>
 

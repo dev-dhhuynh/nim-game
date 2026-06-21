@@ -238,6 +238,11 @@
     font-size: 0.6rem !important;
 }
 
+.presetActive {
+    border-color: var(--accent-primary) !important;
+    background: rgba(0, 245, 196, 0.12) !important;
+    color: var(--accent-primary) !important;
+}
 /* Danh sách hàng */
 .piles {
     display: flex;

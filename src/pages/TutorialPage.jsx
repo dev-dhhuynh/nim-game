@@ -3,76 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { getTutorialSteps, getTutorialUI } from '../utils/translations';
 import styles from './TutorialPage.module.css';
 
-
-// Dữ liệu các bước hướng dẫn
-
-const STEPS = [
-  {
-    id:    1,
-    icon:  '🎯',
-    title: 'NIM là gì?',
-    content: `NIM là một trò chơi chiến thuật cổ xưa có từ hàng nghìn năm trước.
-      Hai người chơi thay nhau lấy que từ các hàng. Người lấy que cuối cùng sẽ thắng.
-      Nghe đơn giản — nhưng ẩn chứa một lý thuyết toán học cực kỳ thú vị!`,
-    demo: null,
-  },
-  {
-    id:    2,
-    icon:  '📜',
-    title: 'Luật chơi cơ bản',
-    content: null,
-    rules: [
-      { icon: '1️⃣', text: 'Mỗi lượt, người chơi chọn MỘT hàng bất kỳ' },
-      { icon: '2️⃣', text: 'Lấy ít nhất 1 que, có thể lấy tất cả que trong hàng đó' },
-      { icon: '3️⃣', text: 'Không được bỏ lượt và không được lấy từ 2 hàng cùng lúc' },
-      { icon: '🏆', text: 'Người lấy que CUỐI CÙNG là người THẮNG' },
-      { icon: '🔀', text: 'Biến thể Misère: người lấy que cuối THUA' },
-    ],
-  },
-  {
-    id:    3,
-    icon:  '🧮',
-    title: 'Lý thuyết Nim-Sum',
-    content: `Chìa khóa để luôn thắng là tính NIM-SUM — phép XOR (hoặc loại trừ) 
-      của tất cả các hàng. Nếu Nim-Sum ≠ 0 sau lượt đi của bạn, bạn đang ở thế THẮNG.
-      Nếu Nim-Sum = 0, bạn đang ở thế THUA.`,
-    example: {
-      piles:   [3, 5, 7],
-      binary: [
-        { val: 3, bin: '011' },
-        { val: 5, bin: '101' },
-        { val: 7, bin: '111' },
-      ],
-      xorResult: { val: 1, bin: '001' },
-    },
-  },
-  {
-    id:    4,
-    icon:  '♟️',
-    title: 'Chiến thuật thắng',
-    content: `Khi Nim-Sum ≠ 0, luôn tồn tại một nước đi giúp bạn đưa Nim-Sum về 0.
-      Đối thủ dù đi thế nào cũng sẽ làm Nim-Sum ≠ 0 trở lại — và bạn lại
-      có thể đưa về 0. Cứ thế cho đến khi tất cả hàng trống.`,
-    strategy: [
-      { step: 'Tính Nim-Sum của tất cả hàng bằng XOR',        good: true  },
-      { step: 'Nếu Nim-Sum = 0: đi bất kỳ, chờ đối thủ sai', good: false },
-      { step: 'Nếu Nim-Sum ≠ 0: tìm hàng để đưa Nim-Sum = 0', good: true  },
-      { step: 'Sau nước đi của bạn, Nim-Sum luôn = 0',         good: true  },
-    ],
-  },
-  {
-    id:    5,
-    icon:  '💡',
-    title: 'Ví dụ thực tế',
-    content: `Giả sử có 3 hàng: [1, 3, 5]. Nim-Sum = 1 XOR 3 XOR 5 = 7 ≠ 0.
-      Bạn cần lấy từ hàng nào đó để Nim-Sum = 0. 
-      Thử hàng 3 (có 5 que): 5 XOR 7 = 2 — cần giữ lại 2 que, lấy đi 3 que.
-      Kiểm tra: 1 XOR 3 XOR 2 = 0 ✅`,
-    tip: 'Dùng nút 💡 Gợi ý trong game để xem nước đi tối ưu bất cứ lúc nào!',
-  },
-];
 
 // Component demo hàng que nhỏ
 
@@ -92,8 +25,12 @@ const MiniPile = ({ count, label }) => (
 // Trang hướng dẫn chính
 
 const TutorialPage = () => {
-  const { goToMenu, goToSetup } = useGameStore();
+  const { goToMenu, goToSetup, settings } = useGameStore();
   const [currentStep, setCurrentStep] = useState(0);
+
+  const lang  = settings.language || 'vi';
+  const STEPS = getTutorialSteps(lang);
+  const ui    = getTutorialUI(lang);
 
   const step     = STEPS[currentStep];
   const isFirst  = currentStep === 0;
@@ -118,9 +55,9 @@ const TutorialPage = () => {
             style={{ padding: '6px 12px', fontSize: '0.7rem' }}
             onClick={goToMenu}
           >
-            ← Quay lại
+            {ui.back}
           </button>
-          <h2 className={styles.title}>HƯỚNG DẪN CHƠI</h2>
+          <h2 className={styles.title}>{ui.title}</h2>
           <div />
         </div>
 
@@ -191,7 +128,7 @@ const TutorialPage = () => {
                     <MiniPile
                       key={i}
                       count={count}
-                      label={`Hàng ${i + 1}`}
+                      label={`${step.example.rowLabel} ${i + 1}`}
                     />
                   ))}
                 </div>
@@ -199,19 +136,19 @@ const TutorialPage = () => {
                 {/* Bảng XOR */}
                 <div className={styles.xorTable}>
                   <div className={styles.xorHeader}>
-                    <span>Hàng</span>
-                    <span>Giá trị</span>
-                    <span>Nhị phân</span>
+                    <span>{step.example.rowLabel}</span>
+                    <span>{ui.valueCol}</span>
+                    <span>{ui.binCol}</span>
                   </div>
                   {step.example.binary.map((row, i) => (
                     <div key={i} className={styles.xorRow}>
-                      <span>Hàng {i + 1}</span>
+                      <span>{step.example.rowLabel} {i + 1}</span>
                       <span className={styles.xorVal}>{row.val}</span>
                       <span className={styles.xorBin}>{row.bin}</span>
                     </div>
                   ))}
                   <div className={`${styles.xorRow} ${styles.xorResult}`}>
-                    <span>XOR</span>
+                    <span>{ui.xorLabel}</span>
                     <span className={styles.xorVal}>
                       {step.example.xorResult.val}
                     </span>
@@ -224,8 +161,8 @@ const TutorialPage = () => {
                 <p className={styles.xorNote}>
                   Nim-Sum = <strong>{step.example.xorResult.val}</strong>
                   {step.example.xorResult.val !== 0
-                    ? ' ≠ 0 → Có nước đi thắng! ✅'
-                    : ' = 0 → Đang ở thế thua ⚠️'}
+                    ? ui.nimSumWin
+                    : ui.nimSumLose}
                 </p>
               </div>
             )}
@@ -271,7 +208,7 @@ const TutorialPage = () => {
             onClick={goPrev}
             disabled={isFirst}
           >
-            ← Trước
+            {ui.prev}
           </button>
 
           {isLast ? (
@@ -279,14 +216,14 @@ const TutorialPage = () => {
               className='btn btn-primary'
               onClick={goToSetup}
             >
-              ▶ Bắt đầu chơi!
+              {ui.start}
             </button>
           ) : (
             <button
               className='btn btn-primary'
               onClick={goNext}
             >
-              Tiếp →
+              {ui.next}
             </button>
           )}
         </div>

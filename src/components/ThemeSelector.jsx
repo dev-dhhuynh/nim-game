@@ -3,9 +3,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THEMES } from '../utils/themes';
+import { useGameStore } from '../store/gameStore';
+import { getThemeLabel, getThemeSelectorUI } from '../utils/translations';
 import styles from './ThemeSelector.module.css';
 
 const ThemeSelector = ({ currentTheme, onChange }) => {
+  const { settings } = useGameStore();
+  const lang = settings.language || 'vi';
+  const t    = getThemeSelectorUI(lang);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (themeKey) => {
@@ -23,8 +29,8 @@ const ThemeSelector = ({ currentTheme, onChange }) => {
         className={styles.trigger}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={styles.triggerLabel}>🎨 Chủ đề</span>
-        <span className={styles.triggerCurrent}>{current.label}</span>
+        <span className={styles.triggerLabel}>{t.themeLabel}</span>
+        <span className={styles.triggerCurrent}>{getThemeLabel(current.key, lang)}</span>
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -65,7 +71,7 @@ const ThemeSelector = ({ currentTheme, onChange }) => {
                 />
 
                 {/* Tên theme */}
-                <span className={styles.themeName}>{theme.label}</span>
+                <span className={styles.themeName}>{getThemeLabel(theme.key, lang)}</span>
 
                 {/* Emoji vật phẩm */}
                 <span className={styles.themeEmoji}>

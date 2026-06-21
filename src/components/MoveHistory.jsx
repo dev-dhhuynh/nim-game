@@ -1,8 +1,9 @@
-
 // Lịch sử các nước đi
 
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
+import { getMoveHistoryUI } from '../utils/translations';
 import styles from './MoveHistory.module.css';
 
 const MoveHistory = ({
@@ -10,6 +11,10 @@ const MoveHistory = ({
   playerNames,  // tên 2 người chơi
   settings,     // cài đặt game (để biết mode PvP hay PvC)
 }) => {
+
+  const { settings: globalSettings } = useGameStore();
+  const lang = globalSettings.language || 'vi';
+  const t    = getMoveHistoryUI(lang);
 
   // Dùng để tự động cuộn xuống cuối danh sách
   const bottomRef = useRef(null);
@@ -31,7 +36,7 @@ const MoveHistory = ({
 
       {/* Tiêu đề */}
       <div className={styles.header}>
-        <span className={styles.title}>LỊCH SỬ NƯỚC ĐI</span>
+        <span className={styles.title}>{t.title}</span>
         <span className={styles.count}>{history.length}</span>
       </div>
 
@@ -39,7 +44,7 @@ const MoveHistory = ({
       <div className={styles.list}>
         <AnimatePresence initial={false}>
           {history.length === 0 ? (
-            <p className={styles.empty}>Chưa có nước đi nào</p>
+            <p className={styles.empty}>{t.empty}</p>
           ) : (
             history.map((move, i) => (
               <motion.div
@@ -59,7 +64,7 @@ const MoveHistory = ({
 
                 {/* Mô tả nước đi */}
                 <span className={styles.moveDesc}>
-                  lấy <strong>{move.removeCount}</strong> từ hàng{' '}
+                  {t.took} <strong>{move.removeCount}</strong> {t.fromRow}{' '}
                   <strong>{move.pileIndex + 1}</strong>
                 </span>
               </motion.div>

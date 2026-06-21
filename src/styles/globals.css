@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
     --bg-primary: #0d0d14;
@@ -21,8 +21,8 @@
     --radius: 8px;
     --radius-lg: 16px;
 
-    --font-display: 'Segoe UI', sans-serif;
-    --font-body: 'Segoe UI', sans-serif;
+    --font-display: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
     --font-mono: 'Space Mono', monospace;
 
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,12 +70,11 @@ body {
     border: none;
     border-radius: var(--radius);
     font-family: var(--font-display);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     cursor: pointer;
     transition: var(--transition);
-    text-transform: uppercase;
 }
 
 .btn:active {
@@ -105,173 +104,15 @@ body {
 
 /* btn-ghost — nổi rõ trên mọi nền */
 .btn-ghost {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.18);
     color: var(--text-primary);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 .btn-ghost:hover {
     color: var(--accent-primary);
     border-color: var(--accent-primary);
-    background: rgba(255, 255, 255, 0.18);
-}
-
-.btn-ghost:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-/* ── Badge nhỏ ── */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.badge-primary {
-    background: rgba(0, 245, 196, 0.15);
-    color: var(--accent-primary);
-    border: 1px solid rgba(0, 245, 196, 0.3);
-}
-
-.badge-red {
-    background: rgba(255, 56, 100, 0.15);
-    color: var(--accent-red);
-    border: 1px solid rgba(255, 56, 100, 0.3);
-}
-
-/* ── Animation ── */
-@keyframes float {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-6px);
-    }
-}@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
-
-:root {
-    --bg-primary: #0d0d14;
-    --bg-secondary: #1a1a26;
-    --bg-card: #21212f;
-
-    --accent-primary: #00f5c4;
-    --accent-secondary: #9b4dff;
-    --accent-gold: #ffd000;
-    --accent-red: #ff4571;
-    --accent-blue: #29b8ff;
-
-    --text-primary: #f0f0ff;
-    --text-secondary: #a8a8c8;
-    --text-muted: #606080;
-
-    --border: #35354a;
-    --border-accent: rgba(0, 245, 196, 0.4);
-
-    --radius: 8px;
-    --radius-lg: 16px;
-
-    --font-display: 'Orbitron', monospace;
-    --font-body: 'Rajdhani', sans-serif;
-    --font-mono: 'Space Mono', monospace;
-
-    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* Overlay nền — mặc định trong suốt */
-    --bg-overlay: transparent;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Nền lưới mờ */
-.bg-grid {
-    background-image:
-        linear-gradient(rgba(0, 245, 196, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 245, 196, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-}
-
-/* ── Button dùng chung ── */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: var(--radius);
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    transition: var(--transition);
-    text-transform: uppercase;
-}
-
-.btn:active {
-    transform: scale(0.97);
-}
-
-.btn-primary {
-    background: var(--accent-primary);
-    color: var(--bg-primary);
-}
-
-.btn-primary:hover {
-    background: #00ffd0;
-    box-shadow: 0 0 30px rgba(0, 245, 196, 0.5);
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background: transparent;
-    color: var(--accent-primary);
-    border: 1px solid var(--accent-primary);
-}
-
-.btn-secondary:hover {
-    background: rgba(0, 245, 196, 0.1);
-}
-
-/* btn-ghost — nổi rõ trên mọi nền */
-.btn-ghost {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--text-primary);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-.btn-ghost:hover {
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .btn-ghost:disabled {

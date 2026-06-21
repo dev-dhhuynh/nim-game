@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
+import { getAivaiUI } from '../utils/translations';
 import styles from './AIvsAIControls.module.css';
 
 const AIvsAIControls = ({
@@ -15,10 +17,14 @@ const AIvsAIControls = ({
   moveCount,    // số nước đã đi
 }) => {
 
+  const { settings } = useGameStore();
+  const lang = settings.language || 'vi';
+  const t    = getAivaiUI(lang);
+
   const speeds = [
-    { key: 'slow',   label: '🐢 Chậm',  ms: 1500 },
-    { key: 'normal', label: '▶ Bình thường', ms: 800 },
-    { key: 'fast',   label: '⚡ Nhanh', ms: 300  },
+    { key: 'slow',   label: t.speedSlow,   ms: 1500 },
+    { key: 'normal', label: t.speedNormal, ms: 800 },
+    { key: 'fast',   label: t.speedFast,   ms: 300  },
   ];
 
   return (
@@ -29,15 +35,15 @@ const AIvsAIControls = ({
     >
       {/* Tiêu đề */}
       <div className={styles.header}>
-        <span className={styles.title}>🤖 AI vs AI</span>
+        <span className={styles.title}>{t.title}</span>
         <span className={styles.moveCount}>
-          {moveCount} nước đã đi
+          {moveCount} {t.movesDone}
         </span>
       </div>
 
       {/* Chọn tốc độ */}
       <div className={styles.speedRow}>
-        <span className={styles.label}>Tốc độ:</span>
+        <span className={styles.label}>{t.speedLabel}</span>
         <div className={styles.speedBtns}>
           {speeds.map((s) => (
             <button
@@ -64,7 +70,7 @@ const AIvsAIControls = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{   scale: 0.95 }}
         >
-          {isRunning ? '⏸ Tạm dừng' : '▶ Tự chơi'}
+          {isRunning ? t.pause : t.play}
         </motion.button>
 
         {/* Nút đi từng bước */}
@@ -75,7 +81,7 @@ const AIvsAIControls = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{   scale: 0.95 }}
         >
-          ⏭ Từng bước
+          {t.step}
         </motion.button>
 
         {/* Nút reset */}
@@ -85,14 +91,14 @@ const AIvsAIControls = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{   scale: 0.95 }}
         >
-          ↺ Reset
+          {t.reset}
         </motion.button>
 
       </div>
 
       {/* Chú thích */}
       <p className={styles.note}>
-        Quan sát AI áp dụng thuật toán Sprague-Grundy để học chiến thuật tối ưu
+        {t.note}
       </p>
 
     </motion.div>
